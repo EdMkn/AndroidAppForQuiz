@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Java Quiz App</string>
+    <string name="welcome_title">Java 17-21 Quiz</string>
+    <string name="welcome_subtitle">Test your knowledge of modern Java features</string>
+    <string name="start_quiz">Start Quiz</string>
+    <string name="question_counter">Question %1$d of %2$d</string>
+    <string name="next_question">Next Question</string>
+    <string name="finish_quiz">Finish Quiz</string>
+    <string name="results_title">Quiz Results</string>
+    <string name="score">Score: %1$d / %2$d</string>
+    <string name="percentage">%1$d%%</string>
+    <string name="restart_quiz">Restart Quiz</string>
+    <string name="back_to_home">Back to Home</string>
+    <string name="correct_answer">Correct!</string>
+    <string name="incorrect_answer">Incorrect</string>
+    <string name="explanation">Explanation:</string>
+    <string name="java_version">Java %1$s</string>
+</resources>
+
