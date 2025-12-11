@@ -1,0 +1,53 @@
+name: Docker Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-with-docker:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: javaguiz-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+      
+      - name: Build APK using Docker with cache
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -v gradle-cache:/root/.gradle/caches \
+            -v gradle-wrapper:/root/.gradle/wrapper \
+            -w /app \
+            javaguiz-app:latest \
+            ./gradlew assembleDebug --no-daemon
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-docker
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+
+

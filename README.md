@@ -123,6 +123,40 @@ The app follows a simple, intuitive architecture:
 
 This is similar to MVC/MVP patterns in web development.
 
+## 🐳 Docker & Distribution
+
+### Building with Docker
+
+This project includes Docker support for consistent builds:
+
+```bash
+# Build the Docker image
+docker build -t javaguiz-app .
+
+# Build the APK inside the container
+docker run --rm -v $(pwd):/app -w /app javaguiz-app ./gradlew assembleDebug
+```
+
+**Why Docker?**
+- ✅ Consistent build environment (same Android SDK, JDK, tools)
+- ✅ Perfect for CI/CD pipelines
+- ✅ No need to install Android SDK locally for builds
+- ❌ Not for running the app (APKs need Android runtime)
+
+### Automated Distribution
+
+**GitHub Actions** workflows are set up for automated builds:
+
+1. **Manual Build**: Go to Actions → "Build and Release APK" → Run workflow
+2. **Automatic Release**: Push a version tag to create a release:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+   GitHub will automatically build and create a release with downloadable APK!
+
+📖 **See [DOCKER.md](DOCKER.md) for detailed Docker and distribution guide.**
+
 ## 📖 Learning Resources
 
 - [Android Developer Guide](https://developer.android.com/guide)
