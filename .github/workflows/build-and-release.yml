@@ -4,6 +4,14 @@ on:
   push:
     tags:
       - 'v*'  # Trigger on version tags like v1.0.0
+    paths-ignore:
+      - '**.md'
+      - '*.sh'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'doc/**'
+      - 'LICENSE'
+      - '.gitignore'
   workflow_dispatch:  # Allow manual triggering
     inputs:
       build_type:

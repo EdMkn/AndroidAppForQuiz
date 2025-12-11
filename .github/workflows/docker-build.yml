@@ -5,10 +5,26 @@ on:
     branches:
       - main
       - master
+    paths-ignore:
+      - '**.md'
+      - '*.sh'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'doc/**'
+      - 'LICENSE'
+      - '.gitignore'
   pull_request:
     branches:
       - main
       - master
+    paths-ignore:
+      - '**.md'
+      - '*.sh'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'doc/**'
+      - 'LICENSE'
+      - '.gitignore'
   workflow_dispatch:
 
 jobs:
