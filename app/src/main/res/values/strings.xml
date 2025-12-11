@@ -16,5 +16,11 @@
     <string name="incorrect_answer">Incorrect</string>
     <string name="explanation">Explanation:</string>
     <string name="java_version">Java %1$s</string>
+    <string name="results">Results</string>
+    <string name="question_text_goes_here">Question text goes here</string>
+    <string name="option_1">Option 1</string>
+    <string name="option_2">Option 2</string>
+    <string name="option_3">Option 3</string>
+    <string name="option_4">Option 4</string>
 </resources>
 
