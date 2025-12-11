@@ -55,30 +55,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       
-      - name: Build Debug APK
-        if: github.event.inputs.build_type == 'debug' || github.event_name == 'push'
-        run: ./gradlew assembleDebug --no-daemon
-      
-      - name: Build Release APK
-        if: github.event.inputs.build_type == 'release' || github.event_name == 'push'
-        run: ./gradlew assembleRelease --no-daemon
-      
-      - name: Upload Debug APK
-        if: github.event.inputs.build_type == 'debug' || github.event_name == 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
-      
-      - name: Upload Release APK
-        if: github.event.inputs.build_type == 'release' || github.event_name == 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: app/build/outputs/apk/release/app-release.apk
-          retention-days: 30
-      
       - name: Check if pre-release
         if: startsWith(github.ref, 'refs/tags/v')
         id: check-prerelease
@@ -92,13 +68,51 @@ jobs:
             echo "Tag $TAG_NAME is a stable release"
           fi
       
+      - name: Build Debug APK
+        if: github.event.inputs.build_type == 'debug' || github.event_name == 'push'
+        run: ./gradlew assembleDebug --no-daemon
+      
+      - name: Build Release APK
+        if: |
+          (github.event.inputs.build_type == 'release' && github.event_name == 'workflow_dispatch') ||
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && steps.check-prerelease.outputs.is_prerelease != 'true')
+        run: ./gradlew assembleRelease --no-daemon
+      
+      - name: Upload Debug APK
+        if: github.event.inputs.build_type == 'debug' || github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+      
+      - name: Upload Release APK
+        if: |
+          (github.event.inputs.build_type == 'release' && github.event_name == 'workflow_dispatch') ||
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && steps.check-prerelease.outputs.is_prerelease != 'true')
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+      
+      - name: Prepare release files
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: prepare-files
+        run: |
+          FILES="app/build/outputs/apk/debug/app-debug.apk"
+          if [ "${{ steps.check-prerelease.outputs.is_prerelease }}" != "true" ] && [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
+            FILES="$FILES app/build/outputs/apk/release/app-release.apk"
+          fi
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/app-release.apk
+          files: ${{ steps.prepare-files.outputs.files }}
           draft: false
           prerelease: ${{ steps.check-prerelease.outputs.is_prerelease }}
           fail_on_unmatched_files: false
