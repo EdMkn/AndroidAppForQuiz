@@ -175,6 +175,7 @@ docker run --rm -v $(pwd):/app -w /app javaguiz-app ./gradlew assembleDebug
 - Verify `minSdk` version matches your device/emulator
 - Check Logcat for error messages
 
+<!--
 ## 📝 Next Steps
 
 Consider adding:
@@ -185,6 +186,7 @@ Consider adding:
 - [ ] Statistics tracking
 - [ ] Database for questions (Room)
 - [ ] Network support for downloading questions
+-->
 
 ## 🤝 Contributing
 
