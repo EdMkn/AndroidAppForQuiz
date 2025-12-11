@@ -1,0 +1,42 @@
+# Build outputs
+build/
+app/build/
+*.apk
+*.aab
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Local properties (may contain sensitive info)
+local.properties
+
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed in build)
+*.md
+!README.md
+
+# Reports
+build/reports/
+
+# Temporary files
+*.log
+*.tmp
+
+
+
