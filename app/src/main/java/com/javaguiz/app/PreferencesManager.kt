@@ -2,13 +2,14 @@ package com.javaguiz.app
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 
 /**
  * Manages user preferences for the app
  * Similar to localStorage in web development
  */
 class PreferencesManager(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     companion object {
         private const val PREFS_NAME = "JavaQuizzPreferences"
@@ -32,6 +33,15 @@ class PreferencesManager(context: Context) {
      * Get number of questions per quiz
      */
     fun getQuestionCount(): Int {
+        val stringValue = prefs.getString(KEY_QUESTION_COUNT, null)
+        if (stringValue != null) {
+            return try {
+                stringValue.toInt()
+            } catch (e: NumberFormatException) {
+                DEFAULT_QUESTION_COUNT
+            }
+        }
+        // Fallback to int (for backward compatibility)
         return prefs.getInt(KEY_QUESTION_COUNT, DEFAULT_QUESTION_COUNT)
     }
     

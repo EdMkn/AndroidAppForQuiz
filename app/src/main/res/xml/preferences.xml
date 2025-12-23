@@ -7,7 +7,6 @@
         <androidx.preference.ListPreference
             app:key="question_count"
             app:title="@string/pref_question_count_title"
-            app:summary="@string/pref_question_count_summary"
             app:entries="@array/question_count_entries"
             app:entryValues="@array/question_count_values"
             app:defaultValue="10" />

@@ -173,24 +173,33 @@ class QuizActivity : AppCompatActivity() {
     private fun provideFeedback(isCorrect: Boolean) {
         // Vibration feedback
         if (preferencesManager.isVibrationEnabled()) {
-            val vibrator = getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                vibrator?.vibrate(
-                    android.os.VibrationEffect.createOneShot(
-                        if (isCorrect) 50 else 100,
-                        android.os.VibrationEffect.DEFAULT_AMPLITUDE
-                    )
-                )
+            val vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
+            val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                vibratorManager?.defaultVibrator
             } else {
                 @Suppress("DEPRECATION")
-                vibrator?.vibrate(if (isCorrect) 50 else 100)
+                getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
+            }
+            // Check if vibrator is available
+            if (vibrator?.hasVibrator() == true) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    vibrator.vibrate(
+                        android.os.VibrationEffect.createOneShot(
+                            if (isCorrect) 50 else 100,
+                            android.os.VibrationEffect.DEFAULT_AMPLITUDE
+                        )
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(if (isCorrect) 50 else 100)
+                }
             }
         }
         
         // Sound feedback could be added here using MediaPlayer or SoundPool
         // if (preferencesManager.isSoundEnabled()) { ... }
     }
-    
+
     /**
      * Show feedback and explanation
      */
