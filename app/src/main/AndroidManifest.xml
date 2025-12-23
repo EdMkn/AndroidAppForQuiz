@@ -30,6 +30,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.CategorySelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JavaQuizApp"
+            android:parentActivityName=".ui.MainActivity" />
+        <activity
             android:name=".ui.QuizActivity"
             android:exported="false"
             android:theme="@style/Theme.JavaQuizApp" />

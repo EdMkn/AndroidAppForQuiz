@@ -74,12 +74,15 @@ class QuizActivity : AppCompatActivity() {
 
         initializeViews()
         
+        // Get selected Java version category from intent (null means all questions)
+        val selectedJavaVersion = intent.getStringExtra("javaVersion")
+        
         // Get question count from preferences - 999 means "all questions"
         val questionCount = preferencesManager.getQuestionCount()
         questions = if (questionCount >= 999) {
-            QuestionBank.getAllQuestions().shuffled()
+            QuestionBank.getQuestionsByVersion(selectedJavaVersion).shuffled()
         } else {
-            QuestionBank.getRandomQuestions(questionCount)
+            QuestionBank.getRandomQuestionsByVersion(questionCount, selectedJavaVersion)
         }
         
         displayQuestion()

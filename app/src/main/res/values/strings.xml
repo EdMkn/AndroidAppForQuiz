@@ -38,5 +38,19 @@
     <string name="pref_vibration_title">Vibration</string>
     <string name="pref_vibration_summary">Vibrate on answer feedback</string>
     <string name="quiz_feedback_attribution">Quiz Feedback</string>
+    
+    <!-- Category selection strings -->
+    <string name="category_selection_title">Choose a Category</string>
+    <string name="category_selection_subtitle">Select a Java version to focus your quiz</string>
+    <string name="category_all">All Questions</string>
+    <string name="java_versions_label">Java Versions</string>
+    <string name="category_java_21">Java 21 (LTS)</string>
+    <string name="category_java_20">Java 20</string>
+    <string name="category_java_19">Java 19</string>
+    <string name="category_java_18">Java 18</string>
+    <string name="category_java_17">Java 17 (LTS)</string>
+    <string name="category_java_8">Java 8</string>
+    <string name="core_java_label">Core Java</string>
+    <string name="category_core_java">Core Java Fundamentals</string>
 </resources>
 

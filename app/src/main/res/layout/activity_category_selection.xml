@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    tools:context=".CategorySelectionActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/categoryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/category_selection_title"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="32dp" />
+
+            <TextView
+                android:id="@+id/categorySubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/category_selection_subtitle"
+                android:textSize="16sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@+id/categoryTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryAllButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_all"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/categorySubtitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="32dp" />
+
+            <TextView
+                android:id="@+id/javaVersionsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/java_versions_label"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
+                app:layout_constraintTop_toBottomOf="@+id/categoryAllButton"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="32dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryJava21Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_java_21"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/javaVersionsLabel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryJava20Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_java_20"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/categoryJava21Button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryJava19Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_java_19"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/categoryJava20Button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryJava18Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_java_18"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/categoryJava19Button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryJava17Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_java_17"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/categoryJava18Button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryJava8Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_java_8"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/categoryJava17Button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp" />
+
+            <TextView
+                android:id="@+id/coreLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/core_java_label"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
+                app:layout_constraintTop_toBottomOf="@+id/categoryJava8Button"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="32dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/categoryCoreButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/category_core_java"
+                android:textSize="16sp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/coreLabel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="32dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

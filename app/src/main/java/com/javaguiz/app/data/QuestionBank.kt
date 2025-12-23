@@ -892,5 +892,50 @@ object QuestionBank {
         val allQuestions = getAllQuestions()
         return allQuestions.shuffled().take(count)
     }
+    
+    /**
+     * Get all questions filtered by Java version
+     * @param javaVersion The Java version to filter by (e.g., "17", "18", "19", "20", "21", "Core", "8", or null for all)
+     */
+    fun getQuestionsByVersion(javaVersion: String?): List<Question> {
+        val allQuestions = getAllQuestions()
+        return if (javaVersion == null || javaVersion == "All") {
+            allQuestions
+        } else {
+            allQuestions.filter { it.javaVersion == javaVersion }
+        }
+    }
+    
+    /**
+     * Get a random subset of questions filtered by Java version
+     * @param count Number of questions to return
+     * @param javaVersion The Java version to filter by (e.g., "17", "18", "19", "20", "21", "Core", "8", or null for all)
+     */
+    fun getRandomQuestionsByVersion(count: Int, javaVersion: String?): List<Question> {
+        val filteredQuestions = getQuestionsByVersion(javaVersion)
+        return filteredQuestions.shuffled().take(count)
+    }
+    
+    /**
+     * Get available Java version categories
+     * Returns versions sorted: Core, 8, then numeric versions in descending order (21, 20, 19, ...)
+     */
+    fun getAvailableVersions(): List<String> {
+        val versions = getAllQuestions()
+            .map { it.javaVersion }
+            .distinct()
+        
+        // Separate into categories
+        val coreVersions = versions.filter { it == "Core" }
+        val java8 = versions.filter { it == "8" }
+        val numericVersions = versions
+            .filter { it != "Core" && it != "8" && it != "All" }
+            .mapNotNull { it.toIntOrNull() }
+            .sortedDescending()
+            .map { it.toString() }
+        
+        // Combine in desired order: Core, 8, then numeric versions (21, 20, 19, ...)
+        return coreVersions + java8 + numericVersions
+    }
 }
 

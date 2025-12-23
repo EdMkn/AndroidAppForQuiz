@@ -8,7 +8,7 @@ import com.google.android.material.button.MaterialButton
 import com.javaguiz.app.util.PreferencesManager
 import com.javaguiz.app.R
 import com.javaguiz.app.ui.SettingsActivity
-import com.javaguiz.app.ui.QuizActivity
+import com.javaguiz.app.ui.CategorySelectionActivity
 // Welcome screen - first thing users see
 class MainActivity : AppCompatActivity() {
 
@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         
         val startButton = findViewById<MaterialButton>(R.id.startButton)
         startButton.setOnClickListener {
-            val intent = Intent(this, QuizActivity::class.java)
+            val intent = Intent(this, CategorySelectionActivity::class.java)
             startActivity(intent)
         }
 
