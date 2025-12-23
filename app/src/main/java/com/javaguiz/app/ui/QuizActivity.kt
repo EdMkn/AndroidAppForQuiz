@@ -1,4 +1,4 @@
-package com.javaguiz.app
+package com.javaguiz.app.ui
 
 import android.content.Intent
 import android.graphics.Color
@@ -7,7 +7,11 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
-
+import com.javaguiz.app.util.PreferencesManager
+import com.javaguiz.app.data.Question
+import com.javaguiz.app.data.QuestionBank
+import com.javaguiz.app.ui.ResultsActivity
+import com.javaguiz.app.R
 /**
  * Quiz Activity - Handles the quiz questions
  * Similar to a component/page that manages quiz state in web development

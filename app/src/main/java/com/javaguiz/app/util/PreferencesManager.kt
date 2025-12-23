@@ -1,4 +1,4 @@
-package com.javaguiz.app
+package com.javaguiz.app.util
 
 import android.content.Context
 import android.content.SharedPreferences

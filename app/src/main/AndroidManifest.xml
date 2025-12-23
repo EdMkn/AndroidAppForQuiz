@@ -16,7 +16,7 @@
         android:largeHeap="false"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.JavaQuizApp">
             <intent-filter>
@@ -25,18 +25,18 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".QuizActivity"
+            android:name=".ui.QuizActivity"
             android:exported="false"
             android:theme="@style/Theme.JavaQuizApp" />
         <activity
-            android:name=".ResultsActivity"
+            android:name=".ui.ResultsActivity"
             android:exported="false"
             android:theme="@style/Theme.JavaQuizApp" />
          <activity
-            android:name=".SettingsActivity"
+            android:name=".ui.SettingsActivity"
             android:exported="false"
             android:theme="@style/Theme.JavaQuizApp"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".ui.MainActivity" />
     </application>
 
 </manifest>

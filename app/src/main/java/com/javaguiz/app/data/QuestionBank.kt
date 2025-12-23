@@ -1,4 +1,4 @@
-package com.javaguiz.app
+package com.javaguiz.app.data
 
 /**
  * Repository class containing all quiz questions

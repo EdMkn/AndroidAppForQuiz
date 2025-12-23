@@ -1,4 +1,4 @@
-package com.javaguiz.app
+package com.javaguiz.app.ui
 
 import android.os.Bundle
 import android.os.Handler
@@ -9,6 +9,8 @@ import androidx.preference.Preference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import com.javaguiz.app.util.PreferencesManager
+import com.javaguiz.app.R
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -78,8 +80,7 @@ class SettingsActivity : AppCompatActivity() {
                 pref.entryValues = entryValues
                 
                 // Ensure value is set and valid BEFORE setting summary provider
-                // Set it directly in SharedPreferences first
-                val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                // Set it directly in SharedPreferences first (reuse prefs from outer scope)
                 val storedValue = prefs.getString(PreferencesManager.KEY_QUESTION_COUNT, null)
                 if (storedValue == null || storedValue.isEmpty()) {
                     prefs.edit().putString(PreferencesManager.KEY_QUESTION_COUNT, "10").commit()

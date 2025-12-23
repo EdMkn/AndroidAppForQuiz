@@ -1,11 +1,14 @@
-package com.javaguiz.app
+package com.javaguiz.app.ui
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.button.MaterialButton
-
+import com.javaguiz.app.util.PreferencesManager
+import com.javaguiz.app.R
+import com.javaguiz.app.ui.SettingsActivity
+import com.javaguiz.app.ui.QuizActivity
 /**
  * Main Activity - Welcome Screen
  * Similar to a landing page in web development
