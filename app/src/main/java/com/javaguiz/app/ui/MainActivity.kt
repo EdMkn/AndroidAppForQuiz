@@ -9,10 +9,7 @@ import com.javaguiz.app.util.PreferencesManager
 import com.javaguiz.app.R
 import com.javaguiz.app.ui.SettingsActivity
 import com.javaguiz.app.ui.QuizActivity
-/**
- * Main Activity - Welcome Screen
- * Similar to a landing page in web development
- */
+// Welcome screen - first thing users see
 class MainActivity : AppCompatActivity() {
 
     private lateinit var preferencesManager: PreferencesManager
@@ -20,24 +17,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize preferences manager
         preferencesManager = PreferencesManager(this)
-        //Apply theme based on preferences
-        applyTheme()
+        applyTheme() // Set dark/light mode before showing UI
 
         setContentView(R.layout.activity_main)
         
-        // Find the start button from the layout (similar to document.getElementById in web)
         val startButton = findViewById<MaterialButton>(R.id.startButton)
-        
-        // Set click listener (similar to addEventListener in web)
         startButton.setOnClickListener {
-            // Navigate to QuizActivity (similar to routing in web)
             val intent = Intent(this, QuizActivity::class.java)
             startActivity(intent)
         }
 
-        // Find and set up settings button
         val settingsButton = findViewById<MaterialButton>(R.id.settingsButton)
         settingsButton.setOnClickListener {
             openSettings()
@@ -46,13 +36,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Reapply theme in case it changed in settings
+        // Theme might have changed in settings, reapply it
         applyTheme()
     }
     
-    /**
-     * Apply theme based on user preference
-     */
+    // Switches between light and dark mode based on user preference
     private fun applyTheme() {
         if (preferencesManager.isDarkModeEnabled()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -61,9 +49,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-     /**
-     * Navigate to settings (call this from a button click)
-     */
     fun openSettings() {
         val intent = Intent(this, SettingsActivity::class.java)
         startActivity(intent)

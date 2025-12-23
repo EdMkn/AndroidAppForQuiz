@@ -2,36 +2,31 @@ package com.javaguiz.app.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.preference.PreferenceManager
 
-/**
- * Manages user preferences for the app
- * Similar to localStorage in web development
- */
+// Wrapper around SharedPreferences - makes it easier to read/write settings
 class PreferencesManager(context: Context) {
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     companion object {
-        private const val PREFS_NAME = "JavaQuizzPreferences"
+        private const val PREFS_NAME = "JavaQuizzPreferences" // Not used but kept for reference
 
-        // Preference keys
+        // Keys used in SharedPreferences
         const val KEY_QUESTION_COUNT = "question_count"
         const val KEY_DARK_MODE = "dark_mode"
         const val KEY_SOUND_ENABLED = "sound_enabled"
         const val KEY_VIBRATION_ENABLED = "vibration_enabled"
         
-        // Default values
+        // Defaults if nothing is stored yet
         const val DEFAULT_QUESTION_COUNT = 10
         const val DEFAULT_DARK_MODE = false
         const val DEFAULT_SOUND_ENABLED = true
         const val DEFAULT_VIBRATION_ENABLED = true
     }
 
-
-
-    /**
-     * Get number of questions per quiz
-     */
+    // Note: question_count is stored as String (because ListPreference uses strings)
+    // but we return Int for convenience
     fun getQuestionCount(): Int {
         val stringValue = prefs.getString(KEY_QUESTION_COUNT, null)
         if (stringValue != null) {
@@ -41,55 +36,41 @@ class PreferencesManager(context: Context) {
                 DEFAULT_QUESTION_COUNT
             }
         }
-        // Fallback to int (for backward compatibility)
+        // Fallback for old installs that might have stored it as int
         return prefs.getInt(KEY_QUESTION_COUNT, DEFAULT_QUESTION_COUNT)
     }
     
-    /**
-     * Set number of questions per quiz
-     */
     fun setQuestionCount(count: Int) {
         prefs.edit().putInt(KEY_QUESTION_COUNT, count).apply()
     }
     
-    /**
-     * Check if dark mode is enabled
-     */
     fun isDarkModeEnabled(): Boolean {
         return prefs.getBoolean(KEY_DARK_MODE, DEFAULT_DARK_MODE)
     }
     
-    /**
-     * Set dark mode preference
-     */
     fun setDarkModeEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DARK_MODE, enabled).apply()
     }
     
-    /**
-     * Check if sound is enabled
-     */
+    // Added logging here to debug sound issues
     fun isSoundEnabled(): Boolean {
-        return prefs.getBoolean(KEY_SOUND_ENABLED, DEFAULT_SOUND_ENABLED)
+        val value = prefs.getBoolean(KEY_SOUND_ENABLED, DEFAULT_SOUND_ENABLED)
+        Log.d("PreferencesManager", "isSoundEnabled() called")
+        Log.d("PreferencesManager", "  Key: $KEY_SOUND_ENABLED")
+        Log.d("PreferencesManager", "  Default value: $DEFAULT_SOUND_ENABLED")
+        Log.d("PreferencesManager", "  Stored value: $value")
+        Log.d("PreferencesManager", "  Preference exists: ${prefs.contains(KEY_SOUND_ENABLED)}")
+        return value
     }
     
-    /**
-     * Set sound preference
-     */
     fun setSoundEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_SOUND_ENABLED, enabled).apply()
     }
     
-    /**
-     * Check if vibration is enabled
-     */
     fun isVibrationEnabled(): Boolean {
         return prefs.getBoolean(KEY_VIBRATION_ENABLED, DEFAULT_VIBRATION_ENABLED)
     }
     
-    /**
-     * Set vibration preference
-     */
     fun setVibrationEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
     }

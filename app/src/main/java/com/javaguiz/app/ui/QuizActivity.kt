@@ -1,8 +1,11 @@
 package com.javaguiz.app.ui
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.media.MediaActionSound
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
@@ -14,13 +17,10 @@ import com.javaguiz.app.data.Question
 import com.javaguiz.app.data.QuestionBank
 import com.javaguiz.app.ui.ResultsActivity
 import com.javaguiz.app.R
-/**
- * Quiz Activity - Handles the quiz questions
- * Similar to a component/page that manages quiz state in web development
- */
+// Main quiz screen - handles question display and answer checking
 class QuizActivity : AppCompatActivity() {
     
-    // UI Components (similar to DOM elements in web)
+    // UI references - need these to update the screen
     private lateinit var questionCounter: TextView
     private lateinit var javaVersionBadge: TextView
     private lateinit var questionText: TextView
@@ -32,51 +32,68 @@ class QuizActivity : AppCompatActivity() {
     private lateinit var explanationText: TextView
     private lateinit var nextButton: MaterialButton
     
-    // Quiz state (similar to component state in React/Vue)
+    // Quiz state tracking
     private lateinit var questions: List<Question>
     private var currentQuestionIndex = 0
     private var score = 0
     private var selectedAnswerIndex: Int? = null
-    private var answerSubmitted = false
+    private var answerSubmitted = false // Prevent changing answer after submission
 
     private lateinit var preferencesManager: PreferencesManager
+    private var mediaActionSound: MediaActionSound? = null // Nullable because sound might be disabled
+    private val attributionContext: Context by lazy {
+        // Create attribution context once for this activity (Android 11+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            createAttributionContext("quiz_feedback")
+        } else {
+            this
+        }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
         
-        // Initialize preferences manager
         preferencesManager = PreferencesManager(this)
 
-        // Initialize UI components
+        // Set up sound feedback - only if enabled (saves resources)
+        // Preloading here so sounds play instantly when needed
+        try {
+            if (preferencesManager.isSoundEnabled()) {
+                mediaActionSound = MediaActionSound()
+                mediaActionSound?.load(MediaActionSound.SHUTTER_CLICK) // For correct answers
+                mediaActionSound?.load(MediaActionSound.FOCUS_COMPLETE) // For wrong answers
+                Log.d("QuizActivity", "MediaActionSound initialized and sounds preloaded")
+            } else {
+                Log.d("QuizActivity", "Sound is disabled, skipping MediaActionSound initialization")
+            }
+        } catch (e: Exception) {
+            Log.e("QuizActivity", "Failed to initialize MediaActionSound", e)
+            mediaActionSound = null
+        }
+
         initializeViews()
         
-        // Load questions based on user preference
+        // Get question count from preferences - 999 means "all questions"
         val questionCount = preferencesManager.getQuestionCount()
         questions = if (questionCount >= 999) {
-            // Show all questions
             QuestionBank.getAllQuestions().shuffled()
         } else {
             QuestionBank.getRandomQuestions(questionCount)
         }
         
-        // Display the first question
         displayQuestion()
-        
-        // Set up option button click listeners
         setupOptionButtons()
         
-        // Set up next button click listener
+        // Handle "Next" button - either go to next question or finish quiz
         nextButton.setOnClickListener {
             if (currentQuestionIndex < questions.size - 1) {
-                // Move to next question
                 currentQuestionIndex++
                 answerSubmitted = false
                 selectedAnswerIndex = null
                 displayQuestion()
                 resetOptionButtons()
             } else {
-                // Quiz finished, go to results
                 goToResults()
             }
         }
@@ -99,42 +116,31 @@ class QuizActivity : AppCompatActivity() {
         nextButton = findViewById(R.id.nextButton)
     }
     
-    /**
-     * Display the current question
-     * Similar to rendering data in a template
-     */
+    // Updates the screen with the current question
     private fun displayQuestion() {
         val question = questions[currentQuestionIndex]
         
-        // Update question counter
         questionCounter.text = getString(R.string.question_counter, currentQuestionIndex + 1, questions.size)
-        
-        // Update Java version badge
         javaVersionBadge.text = getString(R.string.java_version, question.javaVersion)
-        
-        // Update question text
         questionText.text = question.questionText
         
-        // Update option buttons
+        // Set all 4 answer options
         optionButton1.text = question.options[0]
         optionButton2.text = question.options[1]
         optionButton3.text = question.options[2]
         optionButton4.text = question.options[3]
         
-        // Hide feedback and explanation initially
+        // Hide these until user answers
         feedbackText.visibility = View.GONE
         explanationText.visibility = View.GONE
         nextButton.visibility = View.GONE
         
-        // Reset buttons to default state (ensures proper colors in dark mode)
+        // Reset button colors (important for dark mode)
         resetOptionButtons()
-        // Enable all option buttons
         enableOptionButtons()
     }
     
-    /**
-     * Set up click listeners for option buttons
-     */
+    // Wire up the answer buttons
     private fun setupOptionButtons() {
         optionButton1.setOnClickListener { onOptionSelected(0) }
         optionButton2.setOnClickListener { onOptionSelected(1) }
@@ -142,54 +148,64 @@ class QuizActivity : AppCompatActivity() {
         optionButton4.setOnClickListener { onOptionSelected(3) }
     }
     
-    /**
-     * Handle when user selects an option
-     */
+    // Called when user taps an answer
     private fun onOptionSelected(selectedIndex: Int) {
-        if (answerSubmitted) return // Don't allow changing answer after submission
+        Log.d("QuizActivity", "onOptionSelected called with index: $selectedIndex")
+        if (answerSubmitted) {
+            Log.d("QuizActivity", "Answer already submitted, ignoring selection")
+            return // Can't change answer after submitting
+        }
         
         selectedAnswerIndex = selectedIndex
         val question = questions[currentQuestionIndex]
+        Log.d("QuizActivity", "Selected answer index: $selectedIndex, Correct answer index: ${question.correctAnswerIndex}")
         
-        // Disable all buttons to prevent multiple selections
-        disableOptionButtons()
-        
-        // Highlight selected button
+        disableOptionButtons() // Lock in the answer
         highlightSelectedButton(selectedIndex)
         
-        // Check if answer is correct
         val isCorrect = selectedIndex == question.correctAnswerIndex
+        Log.d("QuizActivity", "Answer is correct: $isCorrect")
         
-        // Update score
         if (isCorrect) {
             score++
+            Log.d("QuizActivity", "Score updated to: $score")
         }
 
-        // Provide feedback (sound/vibration if enabled)
+        // Play sound/vibration if enabled
+        Log.d("QuizActivity", "Calling provideFeedback with isCorrect=$isCorrect")
         provideFeedback(isCorrect)
         
-        // Show feedback
         showFeedback(isCorrect, question)
-        
-        // Mark as submitted
         answerSubmitted = true
     }
 
-    /**
-     * Provide haptic/audio feedback based on preferences
-     */
+    // Plays sound and/or vibration based on user preferences
     private fun provideFeedback(isCorrect: Boolean) {
+        Log.d("QuizActivity", "=== provideFeedback called ===")
+        Log.d("QuizActivity", "isCorrect: $isCorrect")
+        
+        // Check sound preference
+        val soundEnabled = preferencesManager.isSoundEnabled()
+        Log.d("QuizActivity", "Sound enabled in preferences: $soundEnabled")
+        Log.d("QuizActivity", "Sound preference key: ${PreferencesManager.KEY_SOUND_ENABLED}")
+        
+        // Check vibration preference
+        val vibrationEnabled = preferencesManager.isVibrationEnabled()
+        Log.d("QuizActivity", "Vibration enabled in preferences: $vibrationEnabled")
+        
         // Vibration feedback
-        if (preferencesManager.isVibrationEnabled()) {
-            val vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
+        if (vibrationEnabled) {
+            Log.d("QuizActivity", "Attempting to provide vibration feedback...")
+            val vibratorManager = attributionContext.getSystemService(VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
             val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                 vibratorManager?.defaultVibrator
             } else {
                 @Suppress("DEPRECATION")
-                getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
+                attributionContext.getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
             }
             // Check if vibrator is available
             if (vibrator?.hasVibrator() == true) {
+                Log.d("QuizActivity", "Vibrator is available, triggering vibration...")
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                     vibrator.vibrate(
                         android.os.VibrationEffect.createOneShot(
@@ -197,20 +213,69 @@ class QuizActivity : AppCompatActivity() {
                             android.os.VibrationEffect.DEFAULT_AMPLITUDE
                         )
                     )
+                    Log.d("QuizActivity", "Vibration triggered (API 26+): ${if (isCorrect) 50 else 100}ms")
                 } else {
                     @Suppress("DEPRECATION")
                     vibrator.vibrate(if (isCorrect) 50 else 100)
+                    Log.d("QuizActivity", "Vibration triggered (API <26): ${if (isCorrect) 50 else 100}ms")
                 }
+            } else {
+                Log.w("QuizActivity", "Vibrator is not available or hasVibrator() returned false")
             }
+        } else {
+            Log.d("QuizActivity", "Vibration is disabled in preferences, skipping...")
         }
         
-        // Sound feedback could be added here using MediaPlayer or SoundPool
-        // if (preferencesManager.isSoundEnabled()) { ... }
+        // Play sound if enabled - different sounds for right/wrong
+        if (soundEnabled) {
+            Log.d("QuizActivity", "Sound is enabled, attempting to play sound...")
+            try {
+                if (mediaActionSound != null) {
+                    val soundType = if (isCorrect) {
+                        MediaActionSound.SHUTTER_CLICK // Happy sound
+                    } else {
+                        MediaActionSound.FOCUS_COMPLETE // Different tone for wrong
+                    }
+                    
+                    // Don't call load() - already preloaded in onCreate()
+                    mediaActionSound?.play(soundType)
+                    Log.d("QuizActivity", "Sound played successfully: ${if (isCorrect) "correct (SHUTTER_CLICK)" else "incorrect (FOCUS_COMPLETE)"}")
+                } else {
+                    Log.w("QuizActivity", "MediaActionSound is null, cannot play sound. Sound may have been disabled or initialization failed.")
+                    // Fallback: try to init on-the-fly (shouldn't happen normally)
+                    try {
+                        mediaActionSound = MediaActionSound()
+                        val soundType = if (isCorrect) MediaActionSound.SHUTTER_CLICK else MediaActionSound.FOCUS_COMPLETE
+                        mediaActionSound?.load(soundType)
+                        mediaActionSound?.play(soundType)
+                        Log.d("QuizActivity", "MediaActionSound initialized on-the-fly and sound played")
+                    } catch (e: Exception) {
+                        Log.e("QuizActivity", "Failed to initialize MediaActionSound on-the-fly", e)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("QuizActivity", "Error playing sound feedback", e)
+            }
+        } else {
+            Log.d("QuizActivity", "Sound is disabled in preferences, skipping sound feedback...")
+        }
+        
+        Log.d("QuizActivity", "=== provideFeedback completed ===")
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clean up sound resources
+        try {
+            mediaActionSound?.release()
+            mediaActionSound = null
+            Log.d("QuizActivity", "MediaActionSound released")
+        } catch (e: Exception) {
+            Log.e("QuizActivity", "Error releasing MediaActionSound", e)
+        }
     }
 
-    /**
-     * Show feedback and explanation
-     */
+    // Shows whether answer was right/wrong and the explanation
     private fun showFeedback(isCorrect: Boolean, question: Question) {
         feedbackText.visibility = View.VISIBLE
         explanationText.visibility = View.VISIBLE
@@ -231,32 +296,27 @@ class QuizActivity : AppCompatActivity() {
         explanationText.text = "${getString(R.string.explanation)}\n${question.explanation}"
     }
     
-    /**
-     * Highlight the selected button
-     */
+    // Highlights the button user just tapped (uses theme color so it works in dark mode)
     private fun highlightSelectedButton(index: Int) {
         val button = getOptionButton(index)
-        // Use a lighter version of primary color for selection
+        // Get primary color from theme (adapts to light/dark mode)
         val typedValue = TypedValue()
         theme.resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true)
         val primaryColor = typedValue.data
+        // Semi-transparent background
         val selectedBg = Color.argb(30, Color.red(primaryColor), Color.green(primaryColor), Color.blue(primaryColor))
         button.setBackgroundColor(selectedBg)
         button.setTextColor(primaryColor)
     }
     
-    /**
-     * Highlight the correct answer
-     */
+    // Shows the correct answer in green when user gets it wrong
     private fun highlightCorrectAnswer(index: Int) {
         val button = getOptionButton(index)
-        button.setBackgroundColor(Color.parseColor("#C8E6C9"))
-        button.setTextColor(Color.parseColor("#2E7D32"))
+        button.setBackgroundColor(Color.parseColor("#C8E6C9")) // Light green
+        button.setTextColor(Color.parseColor("#2E7D32")) // Dark green
     }
     
-    /**
-     * Get option button by index
-     */
+    // Helper to get button by index (0-3)
     private fun getOptionButton(index: Int): MaterialButton {
         return when (index) {
             0 -> optionButton1
@@ -267,9 +327,7 @@ class QuizActivity : AppCompatActivity() {
         }
     }
     
-    /**
-     * Enable all option buttons
-     */
+    // Re-enable buttons for new question
     private fun enableOptionButtons() {
         optionButton1.isEnabled = true
         optionButton2.isEnabled = true
@@ -277,9 +335,7 @@ class QuizActivity : AppCompatActivity() {
         optionButton4.isEnabled = true
     }
     
-    /**
-     * Disable all option buttons
-     */
+    // Lock buttons after answer is selected
     private fun disableOptionButtons() {
         optionButton1.isEnabled = false
         optionButton2.isEnabled = false
@@ -287,9 +343,7 @@ class QuizActivity : AppCompatActivity() {
         optionButton4.isEnabled = false
     }
     
-    /**
-     * Reset option buttons to default state
-     */
+    // Reset button colors to default (important for dark mode)
     private fun resetOptionButtons() {
         val buttons = listOf(optionButton1, optionButton2, optionButton3, optionButton4)
         // Use Material colorOnSurface for proper dark mode support
@@ -316,15 +370,13 @@ class QuizActivity : AppCompatActivity() {
         }
     }
     
-    /**
-     * Navigate to results screen
-     */
+    // Quiz finished - show results and close this screen
     private fun goToResults() {
         val intent = Intent(this, ResultsActivity::class.java)
         intent.putExtra("score", score)
         intent.putExtra("total", questions.size)
         startActivity(intent)
-        finish() // Close this activity (similar to navigation.replace in web)
+        finish()
     }
 }
 

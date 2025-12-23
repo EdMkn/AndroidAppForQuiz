@@ -37,5 +37,6 @@
     <string name="pref_sound_summary">Play sounds for correct/incorrect answers</string>
     <string name="pref_vibration_title">Vibration</string>
     <string name="pref_vibration_summary">Vibrate on answer feedback</string>
+    <string name="quiz_feedback_attribution">Quiz Feedback</string>
 </resources>
 

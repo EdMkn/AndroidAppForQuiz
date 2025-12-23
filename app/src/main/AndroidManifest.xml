@@ -6,6 +6,11 @@
     <!-- Add vibration permission -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Attribution tags for system services tracking -->
+    <attribution
+        android:tag="quiz_feedback"
+        android:label="@string/quiz_feedback_attribution" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
