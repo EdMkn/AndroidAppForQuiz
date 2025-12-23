@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark mode colors -->
+    <color name="background_light">#FF121212</color>
+    <color name="background_dark">#FF000000</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#FFB3B3B3</color>
+    <color name="surface">#FF1E1E1E</color>
+    <color name="surface_light">#FF2D2D2D</color>
+</resources>
+

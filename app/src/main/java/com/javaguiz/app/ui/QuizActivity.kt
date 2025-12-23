@@ -3,9 +3,11 @@ package com.javaguiz.app.ui
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.javaguiz.app.util.PreferencesManager
 import com.javaguiz.app.data.Question
@@ -124,6 +126,8 @@ class QuizActivity : AppCompatActivity() {
         explanationText.visibility = View.GONE
         nextButton.visibility = View.GONE
         
+        // Reset buttons to default state (ensures proper colors in dark mode)
+        resetOptionButtons()
         // Enable all option buttons
         enableOptionButtons()
     }
@@ -232,8 +236,13 @@ class QuizActivity : AppCompatActivity() {
      */
     private fun highlightSelectedButton(index: Int) {
         val button = getOptionButton(index)
-        button.setBackgroundColor(Color.parseColor("#E3F2FD"))
-        button.setTextColor(Color.parseColor("#1976D2"))
+        // Use a lighter version of primary color for selection
+        val typedValue = TypedValue()
+        theme.resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true)
+        val primaryColor = typedValue.data
+        val selectedBg = Color.argb(30, Color.red(primaryColor), Color.green(primaryColor), Color.blue(primaryColor))
+        button.setBackgroundColor(selectedBg)
+        button.setTextColor(primaryColor)
     }
     
     /**
@@ -283,9 +292,27 @@ class QuizActivity : AppCompatActivity() {
      */
     private fun resetOptionButtons() {
         val buttons = listOf(optionButton1, optionButton2, optionButton3, optionButton4)
-        buttons.forEach { button ->
-            button.setBackgroundColor(Color.TRANSPARENT)
-            button.setTextColor(Color.parseColor("#6200EE"))
+        // Use Material colorOnSurface for proper dark mode support
+        // This ensures text is visible on both light and dark backgrounds
+        val typedValue = TypedValue()
+        val attributeResId = com.google.android.material.R.attr.colorOnSurface
+        if (theme.resolveAttribute(attributeResId, typedValue, true)) {
+            val textColor = typedValue.data
+            buttons.forEach { button ->
+                button.setBackgroundColor(Color.TRANSPARENT)
+                button.setTextColor(textColor)
+                button.isEnabled = true
+            }
+        } else {
+            // Fallback to textColorPrimary if colorOnSurface is not available
+            val fallbackTypedValue = TypedValue()
+            theme.resolveAttribute(android.R.attr.textColorPrimary, fallbackTypedValue, true)
+            val textColor = fallbackTypedValue.data
+            buttons.forEach { button ->
+                button.setBackgroundColor(Color.TRANSPARENT)
+                button.setTextColor(textColor)
+                button.isEnabled = true
+            }
         }
     }
     

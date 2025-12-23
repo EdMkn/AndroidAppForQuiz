@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/score"
                 android:textSize="24sp"
-                android:textColor="@color/black"
+                android:textColor="?android:attr/textColorPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/resultsTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
