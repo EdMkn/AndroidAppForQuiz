@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="question_count_entries">
+        <item>5 Questions</item>
+        <item>10 Questions</item>
+        <item>15 Questions</item>
+        <item>20 Questions</item>
+        <item>25 Questions</item>
+        <item>All Questions</item>
+    </array>
+    
+    <array name="question_count_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>999</item> <!-- Special value for "all" -->
+    </array>
+</resources>

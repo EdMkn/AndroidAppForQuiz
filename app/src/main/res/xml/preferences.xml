@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- Quiz Settings Category -->
+    <PreferenceCategory app:title="@string/pref_category_quiz">
+        
+        <androidx.preference.ListPreference
+            app:key="question_count"
+            app:title="@string/pref_question_count_title"
+            app:summary="@string/pref_question_count_summary"
+            app:entries="@array/question_count_entries"
+            app:entryValues="@array/question_count_values"
+            app:defaultValue="10" />
+        
+    </PreferenceCategory>
+    
+    <!-- Appearance Settings Category -->
+    <PreferenceCategory app:title="@string/pref_category_appearance">
+        
+        <androidx.preference.SwitchPreferenceCompat
+            app:key="dark_mode"
+            app:title="@string/pref_dark_mode_title"
+            app:summary="@string/pref_dark_mode_summary"
+            app:defaultValue="false" />
+        
+    </PreferenceCategory>
+    
+    <!-- Feedback Settings Category -->
+    <PreferenceCategory app:title="@string/pref_category_feedback">
+        
+        <androidx.preference.SwitchPreferenceCompat
+            app:key="sound_enabled"
+            app:title="@string/pref_sound_title"
+            app:summary="@string/pref_sound_summary"
+            app:defaultValue="true" />
+        
+        <androidx.preference.SwitchPreferenceCompat
+            app:key="vibration_enabled"
+            app:title="@string/pref_vibration_title"
+            app:summary="@string/pref_vibration_summary"
+            app:defaultValue="true" />
+        
+    </PreferenceCategory>
+    
+</PreferenceScreen>

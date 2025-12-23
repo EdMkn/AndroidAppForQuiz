@@ -32,16 +32,27 @@ class QuizActivity : AppCompatActivity() {
     private var score = 0
     private var selectedAnswerIndex: Int? = null
     private var answerSubmitted = false
+
+    private lateinit var preferencesManager: PreferencesManager
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
         
+        // Initialize preferences manager
+        preferencesManager = PreferencesManager(this)
+
         // Initialize UI components
         initializeViews()
         
-        // Load questions (you can modify this to get 10, 20, or all questions)
-        questions = QuestionBank.getRandomQuestions(10) // Get 10 random questions
+        // Load questions based on user preference
+        val questionCount = preferencesManager.getQuestionCount()
+        questions = if (questionCount >= 999) {
+            // Show all questions
+            QuestionBank.getAllQuestions().shuffled()
+        } else {
+            QuestionBank.getRandomQuestions(questionCount)
+        }
         
         // Display the first question
         displayQuestion()
@@ -145,12 +156,39 @@ class QuizActivity : AppCompatActivity() {
         if (isCorrect) {
             score++
         }
+
+        // Provide feedback (sound/vibration if enabled)
+        provideFeedback(isCorrect)
         
         // Show feedback
         showFeedback(isCorrect, question)
         
         // Mark as submitted
         answerSubmitted = true
+    }
+
+    /**
+     * Provide haptic/audio feedback based on preferences
+     */
+    private fun provideFeedback(isCorrect: Boolean) {
+        // Vibration feedback
+        if (preferencesManager.isVibrationEnabled()) {
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator?.vibrate(
+                    android.os.VibrationEffect.createOneShot(
+                        if (isCorrect) 50 else 100,
+                        android.os.VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(if (isCorrect) 50 else 100)
+            }
+        }
+        
+        // Sound feedback could be added here using MediaPlayer or SoundPool
+        // if (preferencesManager.isSoundEnabled()) { ... }
     }
     
     /**
