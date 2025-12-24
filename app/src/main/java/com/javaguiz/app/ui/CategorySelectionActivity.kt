@@ -4,24 +4,39 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
-import com.javaguiz.app.data.QuestionBank
+import com.javaguiz.app.data.QuestionRepository
+import com.javaguiz.app.QuizApplication
 import com.javaguiz.app.R
+import kotlinx.coroutines.launch
 
 /**
  * Category selection screen - allows users to choose a Java version category
  */
 class CategorySelectionActivity : AppCompatActivity() {
     
+    private lateinit var questionRepository: QuestionRepository
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_category_selection)
         
-        // Get available versions from QuestionBank
-        val availableVersions = QuestionBank.getAvailableVersions()
+        // Get repository from Application
+        questionRepository = (application as QuizApplication).questionRepository
         
-        // Set up category buttons
-        setupCategoryButtons(availableVersions)
+        // Load available versions asynchronously from database
+        lifecycleScope.launch {
+            try {
+                val availableVersions = questionRepository.getAvailableVersions()
+                // Update UI on main thread
+                setupCategoryButtons(availableVersions)
+            } catch (e: Exception) {
+                // Handle error - show all buttons as fallback
+                android.util.Log.e("CategorySelectionActivity", "Error loading versions", e)
+                setupCategoryButtons(emptyList()) // Will show all buttons
+            }
+        }
     }
     
     private fun setupCategoryButtons(versions: List<String>) {

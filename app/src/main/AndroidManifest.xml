@@ -12,6 +12,7 @@
         android:label="@string/quiz_feedback_attribution" />
 
     <application
+        android:name=".QuizApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

@@ -179,9 +179,9 @@ docker run --rm -v $(pwd):/app -w /app javaguiz-app ./gradlew assembleDebug
 ## 📝 Next Steps
 
 Consider adding:
-- [ ] User preferences (dark mode, question count)
+- [ ] User preferences (dark mode, question count) ok
 - [ ] Progress saving
-- [ ] Categories by Java version
+- [ ] Categories by Java version ok
 - [ ] Timer for questions
 - [ ] Statistics tracking
 - [ ] Database for questions (Room)

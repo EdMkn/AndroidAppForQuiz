@@ -14,9 +14,13 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.javaguiz.app.util.PreferencesManager
 import com.javaguiz.app.data.Question
-import com.javaguiz.app.data.QuestionBank
+import com.javaguiz.app.data.QuestionRepository
 import com.javaguiz.app.ui.ResultsActivity
+import com.javaguiz.app.QuizApplication
 import com.javaguiz.app.R
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 // Main quiz screen - handles question display and answer checking
 class QuizActivity : AppCompatActivity() {
     
@@ -40,6 +44,7 @@ class QuizActivity : AppCompatActivity() {
     private var answerSubmitted = false // Prevent changing answer after submission
 
     private lateinit var preferencesManager: PreferencesManager
+    private lateinit var questionRepository: QuestionRepository
     private var mediaActionSound: MediaActionSound? = null // Nullable because sound might be disabled
     private val attributionContext: Context by lazy {
         // Create attribution context once for this activity (Android 11+)
@@ -74,19 +79,40 @@ class QuizActivity : AppCompatActivity() {
 
         initializeViews()
         
+        // Get repository from Application
+        questionRepository = (application as QuizApplication).questionRepository
+        
         // Get selected Java version category from intent (null means all questions)
         val selectedJavaVersion = intent.getStringExtra("javaVersion")
         
         // Get question count from preferences - 999 means "all questions"
         val questionCount = preferencesManager.getQuestionCount()
-        questions = if (questionCount >= 999) {
-            QuestionBank.getQuestionsByVersion(selectedJavaVersion).shuffled()
-        } else {
-            QuestionBank.getRandomQuestionsByVersion(questionCount, selectedJavaVersion)
-        }
         
-        displayQuestion()
-        setupOptionButtons()
+        // Load questions asynchronously from database
+        lifecycleScope.launch {
+            try {
+                questions = if (questionCount >= 999) {
+                    // Get all questions and shuffle
+                    questionRepository.getQuestionsByVersion(selectedJavaVersion).first().shuffled()
+                } else {
+                    // Get random subset
+                    questionRepository.getRandomQuestionsByVersion(questionCount, selectedJavaVersion)
+                }
+                
+                // Only proceed if we have questions
+                if (questions.isNotEmpty()) {
+                    displayQuestion()
+                    setupOptionButtons()
+                } else {
+                    // Handle empty questions case
+                    Log.e("QuizActivity", "No questions found for version: $selectedJavaVersion")
+                    finish() // Close activity if no questions
+                }
+            } catch (e: Exception) {
+                Log.e("QuizActivity", "Error loading questions", e)
+                finish() // Close activity on error
+            }
+        }
         
         // Handle "Next" button - either go to next question or finish quiz
         nextButton.setOnClickListener {
