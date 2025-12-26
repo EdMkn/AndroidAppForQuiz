@@ -2,9 +2,16 @@ package com.javaguiz.app.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.javaguiz.app.data.QuestionRepository
 import com.javaguiz.app.QuizApplication
@@ -12,58 +19,111 @@ import com.javaguiz.app.R
 import kotlinx.coroutines.launch
 
 /**
- * Category selection screen - allows users to choose a Java version category
+ * Category selection screen - allows users to choose a Java version and/or category
  */
 class CategorySelectionActivity : AppCompatActivity() {
     
     private lateinit var questionRepository: QuestionRepository
+    private lateinit var step1CategorySelection: View
+    private lateinit var step2VersionSelection: View
+    private lateinit var selectedCategoryText: TextView
+    private lateinit var versionButtonsRecycler: RecyclerView
+    private lateinit var backButton: Button
+    private var selectedCategory: String? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_category_selection)
+
+        step1CategorySelection = findViewById(R.id.step1CategorySelection)
+        step2VersionSelection = findViewById(R.id.step2VersionSelection)
+        selectedCategoryText = findViewById(R.id.selectedCategoryText)
+        versionButtonsRecycler = findViewById(R.id.versionButtonsRecycler)
+        backButton = findViewById(R.id.backButton)
+
+        // Set up RecyclerView for version buttons
+        versionButtonsRecycler.layoutManager = LinearLayoutManager(this)
+        versionButtonsRecycler.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+            )
+        )
+        // Set up back button
+        backButton.setOnClickListener {
+            step1CategorySelection.visibility = View.VISIBLE
+            step2VersionSelection.visibility = View.GONE
+        }
         
         // Get repository from Application
         questionRepository = (application as QuizApplication).questionRepository
         
-        // Load available versions asynchronously from database
+        // Load available versions and categories asynchronously from database
         lifecycleScope.launch {
             try {
                 val availableVersions = questionRepository.getAvailableVersions()
+                val availableCategories = questionRepository.getAvailableCategories()
                 // Update UI on main thread
-                setupCategoryButtons(availableVersions)
+                setupVersionButtons(availableVersions)
+                setupCategoryButtons(availableCategories)
             } catch (e: Exception) {
                 // Handle error - show all buttons as fallback
-                android.util.Log.e("CategorySelectionActivity", "Error loading versions", e)
-                setupCategoryButtons(emptyList()) // Will show all buttons
+                android.util.Log.e("CategorySelectionActivity", "Error loading data", e)
+                setupVersionButtons(emptyList())
+                setupCategoryButtons(emptyList())
+            }
+        }
+        
+        // All Questions button
+        val allButton = findViewById<MaterialButton>(R.id.categoryAllButton)
+        allButton.setOnClickListener {
+            startQuiz(null, null)
+        }
+    }
+    
+    private fun setupVersionButtons(versions: List<String>) {
+        val adapter = VersionAdapter(versions) { selectedVersion ->
+            startQuiz(selectedVersion, selectedCategory)
+        }
+        versionButtonsRecycler.adapter = adapter
+    }
+
+    private fun showVersionSelection(categoryName: String) {
+        selectedCategoryText.text = getString(R.string.selected_category, categoryName)
+        step1CategorySelection.visibility = View.GONE
+        step2VersionSelection.visibility = View.VISIBLE
+        
+        // Load available versions
+        lifecycleScope.launch {
+            try {
+                val versions = questionRepository.getAvailableVersions()
+                setupVersionButtons(versions)
+            } catch (e: Exception) {
+                Log.e("CategorySelection", "Error loading versions", e)
+                // Fallback to default versions if there's an error
+                setupVersionButtons(listOf("21", "20", "19", "18", "17", "8", "Core"))
             }
         }
     }
     
-    private fun setupCategoryButtons(versions: List<String>) {
-        // All Questions button
-        val allButton = findViewById<MaterialButton>(R.id.categoryAllButton)
-        allButton.setOnClickListener {
-            startQuiz(null)
-        }
-        
-        // Java version buttons
-        val versionButtons = mapOf(
-            R.id.categoryJava17Button to "17",
-            R.id.categoryJava18Button to "18",
-            R.id.categoryJava19Button to "19",
-            R.id.categoryJava20Button to "20",
-            R.id.categoryJava21Button to "21",
-            R.id.categoryJava8Button to "8",
-            R.id.categoryCoreButton to "Core"
+    private fun setupCategoryButtons(categories: List<String>) {
+        val categoryButtonMap: Map<Int, String> = mapOf(
+            R.id.categoryAllButton to getString(R.string.all_categories),
+            R.id.categoryLanguageFeaturesButton to "Language Features",
+            R.id.categoryConcurrencyButton to "Concurrency",
+            R.id.categoryCollectionsButton to "Collections",
+            R.id.categoryAPIsButton to "APIs",
+            R.id.categoryCoreConceptsButton to "Core Concepts",
+            R.id.categoryAdvancedButton to "Advanced",
+            R.id.categoryGeneralButton to "General"
         )
-        
-        versionButtons.forEach { (buttonId, version) ->
+        categoryButtonMap.forEach { (buttonId, category) ->
             val button = findViewById<MaterialButton>(buttonId)
-            // Only show buttons for versions that have questions
-            if (versions.contains(version)) {
+            if (categories.contains(category) || category == getString(R.string.all_categories)) {
                 button.visibility = View.VISIBLE
                 button.setOnClickListener {
-                    startQuiz(version)
+                    selectedCategory = if (category == getString(R.string.all_categories)) null else category
+                    showVersionSelection(category)
                 }
             } else {
                 button.visibility = View.GONE
@@ -71,12 +131,44 @@ class CategorySelectionActivity : AppCompatActivity() {
         }
     }
     
-    private fun startQuiz(javaVersion: String?) {
-        val intent = Intent(this, QuizActivity::class.java)
-        if (javaVersion != null) {
-            intent.putExtra("javaVersion", javaVersion)
+    private fun startQuiz(javaVersion: String?, category: String?) {
+        Log.d("QuizStart", "Starting quiz with version: $javaVersion, category: $category")
+        val intent = Intent(this, QuizActivity::class.java).apply {
+            putExtra("version", javaVersion ?: "")
+            putExtra("category", category ?: "")
         }
         startActivity(intent)
+        finish()
+    }
+
+    // Add this adapter class
+private class VersionAdapter(
+        private val versions: List<String>,
+        private val onVersionSelected: (String) -> Unit
+    ) : RecyclerView.Adapter<VersionAdapter.VersionViewHolder>() {
+        class VersionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val button: Button = view as Button
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VersionViewHolder {
+            val button = MaterialButton(parent.context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(32, 16, 32, 16)
+                textSize = 16f
+            }
+            return VersionViewHolder(button)
+        }
+        override fun onBindViewHolder(holder: VersionViewHolder, position: Int) {
+            val version = versions[position]
+            holder.button.text = when (version) {
+                "Core" -> holder.button.context.getString(R.string.core_java)
+                else -> "Java $version"
+            }
+            holder.button.setOnClickListener { onVersionSelected(version) }
+        }
+        override fun getItemCount() = versions.size
     }
 }
 

@@ -59,6 +59,13 @@ class QuizActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
         
+        val version = intent.getStringExtra("version") ?: "no version"
+        val category = intent.getStringExtra("category") ?: "no category"
+        Log.d("QuizActivity", "Received version: $version, category: $category")
+        
+        // Get repository from Application
+        questionRepository = (application as QuizApplication).questionRepository
+        
         preferencesManager = PreferencesManager(this)
 
         // Set up sound feedback - only if enabled (saves resources)
@@ -83,10 +90,12 @@ class QuizActivity : AppCompatActivity() {
         questionRepository = (application as QuizApplication).questionRepository
         
         // Get selected Java version category from intent (null means all questions)
-        val selectedJavaVersion = intent.getStringExtra("javaVersion")
+        val selectedJavaVersion = intent.getStringExtra("version")
         
         // Get selected category from intent (null means all categories)
         val selectedCategory = intent.getStringExtra("category")
+
+        Log.d("QuizActivity", "Selected version: $selectedJavaVersion, category: $selectedCategory")
         
         // Get question count from preferences - 999 means "all questions"
         val questionCount = preferencesManager.getQuestionCount()
@@ -126,7 +135,7 @@ class QuizActivity : AppCompatActivity() {
                 displayQuestion()
                 resetOptionButtons()
             } else {
-                goToResults()
+                goToResults(score, questions.size)
             }
         }
     }
@@ -403,10 +412,13 @@ class QuizActivity : AppCompatActivity() {
     }
     
     // Quiz finished - show results and close this screen
-    private fun goToResults() {
-        val intent = Intent(this, ResultsActivity::class.java)
-        intent.putExtra("score", score)
-        intent.putExtra("total", questions.size)
+    private fun goToResults(score: Int, total: Int) {
+        val intent = Intent(this, ResultsActivity::class.java).apply {
+            putExtra("score", score)
+            putExtra("total", total)
+            putExtra("category", intent.getStringExtra("category"))
+            putExtra("version", intent.getStringExtra("version"))
+        }
         startActivity(intent)
         finish()
     }

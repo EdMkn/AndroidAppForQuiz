@@ -26,6 +26,8 @@ class ResultsActivity : AppCompatActivity() {
         // Get score from previous activity (similar to route params or state in web)
         val score = intent.getIntExtra("score", 0)
         val total = intent.getIntExtra("total", 0)
+        val category = intent.getStringExtra("category")
+        val version = intent.getStringExtra("version")
         
         // Initialize views
         scoreText = findViewById(R.id.scoreText)
@@ -46,7 +48,11 @@ class ResultsActivity : AppCompatActivity() {
         // Set up button listeners
         restartButton.setOnClickListener {
             // Start a new quiz
-            val intent = Intent(this, QuizActivity::class.java)
+            val intent = Intent(this, QuizActivity::class.java).apply {
+                putExtra("category", category)
+                putExtra("version", version)
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            }
             startActivity(intent)
             finish() // Close this activity
         }

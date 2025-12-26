@@ -67,7 +67,7 @@
     "correctAnswerIndex": 1,
     "explanation": "Java 18 changed the default charset for the standard Java APIs from the platform default to UTF-8, ensuring consistent behavior across different platforms.",
     "javaVersion": "18",
-    "category": "Collections"
+    "category": "Advanced"
   },
   {
     "id": 6,
@@ -282,7 +282,12 @@
   {
     "id": 21,
     "questionText": "What is the signature of the main method in Java?",
-    "options": [],
+    "options": [
+      "public static void main(String args)",
+      "public static void main(String[] args)",
+      "public void main(String[] args)",
+      "static void main(String[] args)"
+    ],
     "correctAnswerIndex": 1,
     "explanation": "The main method is the entry point for any Java program. It must be public (accessible), static (can be called without creating an object), void (returns nothing), and accept a String array as parameter.",
     "javaVersion": "Core",
@@ -293,12 +298,12 @@
     "questionText": "What are literals in Java?",
     "options": [
       "Variables that cannot be changed",
-      "Fixed values assigned to variables, like 100, 'A', or \\",
-      ",\n                    ",
-      ",\n                    "
+      "Fixed values assigned to variables, like 100, 'A', or \"Hello\"",
+      "Methods that return constant values",
+      "Classes that cannot be modified"
     ],
     "correctAnswerIndex": 1,
-    "explanation": "Literals refer to the fixed values assigned to variables in Java. Examples include: 100 (integer), -90 (integer), 3.14F (float), 'A' (character), and \\",
+    "explanation": "Literals refer to the fixed values assigned to variables in Java. Examples include: 100 (integer), -90 (integer), 3.14F (float), 'A' (character), and \"Hello\" (string).",
     "javaVersion": "Core",
     "category": "General"
   },
@@ -328,18 +333,21 @@
     "correctAnswerIndex": 1,
     "explanation": "A package in Java is a namespace that organizes a set of related classes and interfaces. Conceptually, you can think of packages as being similar to different folders on your computer.",
     "javaVersion": "Core",
-    "category": "Collections"
+    "category": "Core Concepts"
   },
   {
     "id": 25,
     "questionText": "What is Object-Oriented Programming?",
     "options": [
-      "Programming with objects only"
+      "Programming with objects only",
+      "A programming paradigm based on objects containing data (fields) and code (methods)",
+      "Programming without functions",
+      "A database programming model"
     ],
     "correctAnswerIndex": 1,
     "explanation": "Object-oriented programming (OOP) is a programming paradigm based on the concept of 'objects', which can contain data in the form of fields (attributes or properties) and code in the form of procedures (methods).",
     "javaVersion": "Core",
-    "category": "General"
+    "category": "Core Concepts"
   },
   {
     "id": 26,
@@ -387,7 +395,10 @@
     "id": 29,
     "questionText": "What is the difference between abstract classes and interfaces?",
     "options": [
-      "There is no difference"
+      "There is no difference",
+      "Abstract classes can have both abstract and non-abstract methods; interfaces typically have abstract methods only. A class can implement multiple interfaces but extend only one class",
+      "Interfaces can have instance fields; abstract classes cannot",
+      "Abstract classes are faster than interfaces"
     ],
     "correctAnswerIndex": 1,
     "explanation": "Abstract classes can have both abstract and non-abstract methods and are used to provide a base for subclasses. Interfaces typically contain abstract methods only (though Java 8+ allows default and static methods). A class can implement multiple interfaces but extend only one class.",
@@ -434,7 +445,7 @@
     "correctAnswerIndex": 1,
     "explanation": "Method overloading is a feature that allows a class to have more than one method having the same name, if their parameter lists are different. It is related to compile-time (or static) polymorphism.",
     "javaVersion": "Core",
-    "category": "Collections"
+    "category": "Core Concepts"
   },
   {
     "id": 33,
@@ -448,13 +459,16 @@
     "correctAnswerIndex": 1,
     "explanation": "String is immutable - once created, its value cannot be changed. StringBuilder is mutable and not thread-safe, making it faster for single-threaded operations. StringBuffer is mutable and thread-safe due to synchronized methods, but slower than StringBuilder.",
     "javaVersion": "Core",
-    "category": "Concurrency"
+    "category": "Core Concepts"
   },
   {
     "id": 34,
     "questionText": "What is the difference between == and .equals() in Java?",
     "options": [
-      "They are the same"
+      "They are the same",
+      "== compares references; .equals() compares object content (values)",
+      "== compares values; .equals() compares references",
+      ".equals() is only for primitives"
     ],
     "correctAnswerIndex": 1,
     "explanation": "The == operator compares references, checking if two references point to the same object. The .equals() method compares the content of objects for equality. The default implementation compares references, but many classes override it to compare values.",
@@ -493,7 +507,10 @@
     "id": 37,
     "questionText": "What is the difference between checked and unchecked exceptions?",
     "options": [
-      "There is no difference"
+      "There is no difference",
+      "Checked exceptions must be caught or declared; unchecked exceptions (RuntimeException) don't need to be declared",
+      "Unchecked exceptions must be caught; checked exceptions don't need to be declared",
+      "Checked exceptions are faster than unchecked exceptions"
     ],
     "correctAnswerIndex": 1,
     "explanation": "Checked exceptions must be caught or declared in the method signature using throws. They are checked at compile time. Unchecked exceptions (RuntimeException and its subclasses) don't need to be declared and are checked at runtime.",
@@ -504,7 +521,10 @@
     "id": 38,
     "questionText": "What is the try-catch-finally block?",
     "options": [
-      "A loop structure"
+      "A loop structure",
+      "A structure for exception handling: try contains code that might throw, catch handles exceptions, finally always executes",
+      "A conditional statement",
+      "A method declaration"
     ],
     "correctAnswerIndex": 1,
     "explanation": "The try-catch-finally block is used for exception handling. The try block contains code that might throw an exception. The catch block handles the exception. The finally block always executes, whether an exception occurs or not.",
@@ -543,7 +563,10 @@
     "id": 41,
     "questionText": "What is the List interface in Java?",
     "options": [
-      "A class for storing arrays"
+      "A class for storing arrays",
+      "An interface representing an ordered collection where elements can be accessed by index",
+      "A method for listing files",
+      "A database table structure"
     ],
     "correctAnswerIndex": 1,
     "explanation": "The List interface is part of the Java Collections Framework and represents an ordered collection (also known as a sequence). The user can access elements by their integer index (position in the list), and search for elements in the list.",
@@ -554,7 +577,10 @@
     "id": 42,
     "questionText": "What is the difference between ArrayList and LinkedList?",
     "options": [
-      "They are the same"
+      "They are the same",
+      "ArrayList is a resizable array good for random access; LinkedList is a doubly-linked list good for frequent insertions/deletions",
+      "LinkedList is faster for random access",
+      "ArrayList cannot store objects"
     ],
     "correctAnswerIndex": 1,
     "explanation": "ArrayList is a resizable-array implementation best for storing and accessing data. LinkedList is a doubly-linked list implementation better for operations that require frequent addition and removal of elements from any part of the list.",
@@ -635,7 +661,10 @@
     "id": 48,
     "questionText": "What is the difference between wait() and sleep()?",
     "options": [
-      "They are the same"
+      "They are the same",
+      "wait() releases the lock and must be in synchronized context; sleep() doesn't release locks",
+      "sleep() releases the lock; wait() doesn't",
+      "wait() is faster than sleep()"
     ],
     "correctAnswerIndex": 1,
     "explanation": "wait() is called on an object and releases the lock, allowing other threads to acquire it. sleep() is called on Thread and doesn't release any locks. wait() must be called from a synchronized context.",
@@ -710,7 +739,7 @@
     "correctAnswerIndex": 1,
     "explanation": "The core components of JDBC include DriverManager (manages database drivers), Driver (interface for database drivers), Connection (represents a connection to a database), Statement (executes SQL queries), ResultSet (represents query results), and SQLException (handles database errors).",
     "javaVersion": "Core",
-    "category": "Collections"
+    "category": "APIs"
   },
   {
     "id": 54,
@@ -738,7 +767,7 @@
     "correctAnswerIndex": 1,
     "explanation": "ResultSet is a table of data representing a database result set, which is generated by executing a statement that queries the database. It provides methods to navigate through the rows and retrieve column values.",
     "javaVersion": "Core",
-    "category": "Collections"
+    "category": "APIs"
   },
   {
     "id": 56,
@@ -794,7 +823,7 @@
     "correctAnswerIndex": 1,
     "explanation": "Garbage collection is the automatic memory management process in Java. The JVM automatically identifies and removes objects that are no longer referenced, freeing up memory. Developers don't need to manually deallocate memory.",
     "javaVersion": "Core",
-    "category": "Collections"
+    "category": "Advanced"
   },
   {
     "id": 60,
@@ -870,7 +899,10 @@
     "id": 65,
     "questionText": "What is a wrapper class in Java?",
     "options": [
-      "A class that wraps other classes"
+      "A class that wraps other classes",
+      "A class that wraps primitive types in objects (e.g., Integer for int, Double for double)",
+      "A class for packaging applications",
+      "A class that wraps collections"
     ],
     "correctAnswerIndex": 1,
     "explanation": "Wrapper classes are classes that wrap primitive types in objects. Examples include Integer (for int), Double (for double), Boolean (for boolean), Character (for char), etc. They allow primitives to be used in contexts that require objects.",
