@@ -45,6 +45,42 @@ interface QuestionDao {
     suspend fun getAvailableVersions(): List<String>
     
     /**
+     * Get questions filtered by category as a Flow
+     */
+    @Query("SELECT * FROM questions WHERE category = :category ORDER BY id")
+    fun getQuestionsByCategory(category: String): Flow<List<QuestionEntity>>
+    
+    /**
+     * Get questions filtered by category synchronously
+     */
+    @Query("SELECT * FROM questions WHERE category = :category ORDER BY id")
+    suspend fun getQuestionsByCategorySync(category: String): List<QuestionEntity>
+    
+    /**
+     * Get questions filtered by both version and category as a Flow
+     */
+    @Query("SELECT * FROM questions WHERE javaVersion = :version AND category = :category ORDER BY id")
+    fun getQuestionsByVersionAndCategory(version: String, category: String): Flow<List<QuestionEntity>>
+    
+    /**
+     * Get questions filtered by both version and category synchronously
+     */
+    @Query("SELECT * FROM questions WHERE javaVersion = :version AND category = :category ORDER BY id")
+    suspend fun getQuestionsByVersionAndCategorySync(version: String, category: String): List<QuestionEntity>
+    
+    /**
+     * Get distinct categories available in the database
+     */
+    @Query("SELECT DISTINCT category FROM questions ORDER BY category")
+    suspend fun getAvailableCategories(): List<String>
+    
+    /**
+     * Get distinct categories for a specific Java version
+     */
+    @Query("SELECT DISTINCT category FROM questions WHERE javaVersion = :version ORDER BY category")
+    suspend fun getCategoriesByVersion(version: String): List<String>
+    
+    /**
      * Insert a single question
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)

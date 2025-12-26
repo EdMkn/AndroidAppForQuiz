@@ -61,10 +61,82 @@ class QuestionRepository(context: Context) {
     }
     
     /**
+     * Get questions filtered by category as a Flow
+     */
+    fun getQuestionsByCategory(category: String?): Flow<List<Question>> {
+        return if (category == null || category == "All") {
+            getAllQuestions()
+        } else {
+            questionDao.getQuestionsByCategory(category).map { entities ->
+                entities.map { it.toQuestion() }
+            }
+        }
+    }
+    
+    /**
+     * Get questions filtered by category synchronously
+     */
+    suspend fun getQuestionsByCategorySync(category: String?): List<Question> {
+        return if (category == null || category == "All") {
+            getAllQuestionsSync()
+        } else {
+            questionDao.getQuestionsByCategorySync(category).map { it.toQuestion() }
+        }
+    }
+    
+    /**
+     * Get questions filtered by both version and category as a Flow
+     */
+    fun getQuestionsByVersionAndCategory(version: String?, category: String?): Flow<List<Question>> {
+        return when {
+            (version == null || version == "All") && (category == null || category == "All") -> getAllQuestions()
+            version == null || version == "All" -> getQuestionsByCategory(category)
+            category == null || category == "All" -> getQuestionsByVersion(version)
+            else -> questionDao.getQuestionsByVersionAndCategory(version, category).map { entities ->
+                entities.map { it.toQuestion() }
+            }
+        }
+    }
+    
+    /**
+     * Get questions filtered by both version and category synchronously
+     */
+    suspend fun getQuestionsByVersionAndCategorySync(version: String?, category: String?): List<Question> {
+        return when {
+            (version == null || version == "All") && (category == null || category == "All") -> getAllQuestionsSync()
+            version == null || version == "All" -> getQuestionsByCategorySync(category)
+            category == null || category == "All" -> getQuestionsByVersionSync(version)
+            else -> questionDao.getQuestionsByVersionAndCategorySync(version, category).map { it.toQuestion() }
+        }
+    }
+    
+    /**
+     * Get a random subset of questions filtered by version and category
+     */
+    suspend fun getRandomQuestionsByVersionAndCategory(count: Int, javaVersion: String?, category: String?): List<Question> {
+        val allQuestions = getQuestionsByVersionAndCategorySync(javaVersion, category)
+        return allQuestions.shuffled().take(count)
+    }
+    
+    /**
      * Get available Java version categories
      */
     suspend fun getAvailableVersions(): List<String> {
         return questionDao.getAvailableVersions()
+    }
+    
+    /**
+     * Get available categories
+     */
+    suspend fun getAvailableCategories(): List<String> {
+        return questionDao.getAvailableCategories()
+    }
+    
+    /**
+     * Get available categories for a specific Java version
+     */
+    suspend fun getCategoriesByVersion(version: String): List<String> {
+        return questionDao.getCategoriesByVersion(version)
     }
     
     /**

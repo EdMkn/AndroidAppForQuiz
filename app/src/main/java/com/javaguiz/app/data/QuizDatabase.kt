@@ -11,7 +11,7 @@ import androidx.room.TypeConverters
  */
 @Database(
     entities = [QuestionEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -29,6 +29,7 @@ abstract class QuizDatabase : RoomDatabase() {
                     QuizDatabase::class.java,
                     "quiz_database"
                 )
+                    .fallbackToDestructiveMigration() // For development - clears DB on schema change
                     .build()
                 INSTANCE = instance
                 instance

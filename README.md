@@ -184,7 +184,7 @@ Consider adding:
 - [ ] Categories by Java version ok
 - [ ] Timer for questions
 - [ ] Statistics tracking
-- [ ] Database for questions (Room)
+- [ ] Database for questions (Room) ok
 - [ ] Network support for downloading questions
 -->
 

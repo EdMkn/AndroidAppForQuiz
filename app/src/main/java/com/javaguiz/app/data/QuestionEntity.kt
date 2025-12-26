@@ -16,7 +16,8 @@ data class QuestionEntity(
     val options: List<String>, // Will be converted to JSON string
     val correctAnswerIndex: Int,
     val explanation: String,
-    val javaVersion: String
+    val javaVersion: String,
+    val category: String = "General"
 ) {
     /**
      * Convert entity to domain model
@@ -28,7 +29,8 @@ data class QuestionEntity(
             options = options,
             correctAnswerIndex = correctAnswerIndex,
             explanation = explanation,
-            javaVersion = javaVersion
+            javaVersion = javaVersion,
+            category = category
         )
     }
     
@@ -43,7 +45,8 @@ data class QuestionEntity(
                 options = question.options,
                 correctAnswerIndex = question.correctAnswerIndex,
                 explanation = question.explanation,
-                javaVersion = question.javaVersion
+                javaVersion = question.javaVersion,
+                category = question.category
             )
         }
     }

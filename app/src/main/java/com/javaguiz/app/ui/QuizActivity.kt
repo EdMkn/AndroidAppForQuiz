@@ -85,6 +85,9 @@ class QuizActivity : AppCompatActivity() {
         // Get selected Java version category from intent (null means all questions)
         val selectedJavaVersion = intent.getStringExtra("javaVersion")
         
+        // Get selected category from intent (null means all categories)
+        val selectedCategory = intent.getStringExtra("category")
+        
         // Get question count from preferences - 999 means "all questions"
         val questionCount = preferencesManager.getQuestionCount()
         
@@ -93,10 +96,10 @@ class QuizActivity : AppCompatActivity() {
             try {
                 questions = if (questionCount >= 999) {
                     // Get all questions and shuffle
-                    questionRepository.getQuestionsByVersion(selectedJavaVersion).first().shuffled()
+                    questionRepository.getQuestionsByVersionAndCategory(selectedJavaVersion, selectedCategory).first().shuffled()
                 } else {
                     // Get random subset
-                    questionRepository.getRandomQuestionsByVersion(questionCount, selectedJavaVersion)
+                    questionRepository.getRandomQuestionsByVersionAndCategory(questionCount, selectedJavaVersion, selectedCategory)
                 }
                 
                 // Only proceed if we have questions
