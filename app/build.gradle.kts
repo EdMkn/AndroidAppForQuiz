@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -28,16 +29,56 @@ android {
             )
             // Use debug signing if no release signing config is provided (for CI/CD)
             signingConfig = signingConfigs.getByName("debug")
+            
+            // Enable code optimization
+            isDebuggable = false
+            isJniDebuggable = false
+            isRenderscriptDebuggable = false
+            isPseudoLocalesEnabled = false
         }
+        
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
+            isDebuggable = true
+        }
+    }
+    
+    // Optimize APK packaging
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/*.version"
+            excludes += "META-INF/proguard/*"
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
+    }
+    
+    // Enable build config fields for different build types
+    buildFeatures {
+        buildConfig = true
     }
     
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Enable core library desugaring
+        isCoreLibraryDesugaringEnabled = true
     }
     
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs = listOf(
+            "-Xjvm-default=all",
+            "-opt-in=kotlin.RequiresOptIn"
+        )
+    }
+    
+    // Enable Java 8+ API desugaring
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
     }
 
     buildFeatures {
@@ -55,13 +96,18 @@ android {
 }
 
 dependencies {
+    // Core libraries
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    
+    // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    // Add preference library
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    
+    // Preference library
     implementation("androidx.preference:preference-ktx:1.2.1")
     
     // Room database
@@ -75,8 +121,11 @@ dependencies {
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     
+    // Core library desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    
+    // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
