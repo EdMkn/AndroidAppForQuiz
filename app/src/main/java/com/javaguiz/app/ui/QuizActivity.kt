@@ -159,26 +159,81 @@ class QuizActivity : AppCompatActivity() {
     
     // Updates the screen with the current question
     private fun displayQuestion() {
-        val question = questions[currentQuestionIndex]
+        try {
+            if (questions.isEmpty()) {
+                Log.e("QuizActivity", "No questions available to display")
+                showErrorAndFinish("No questions available. Please try another category.")
+                return
+            }
+            
+            if (currentQuestionIndex < 0 || currentQuestionIndex >= questions.size) {
+                Log.e("QuizActivity", "Invalid question index: $currentQuestionIndex, total questions: ${questions.size}")
+                showErrorAndFinish("Invalid question. Please restart the quiz.")
+                return
+            }
+            
+            val question = questions[currentQuestionIndex]
+            
+            // Update question counter and version badge
+            questionCounter.text = getString(R.string.question_counter, currentQuestionIndex + 1, questions.size)
+            javaVersionBadge.text = getString(R.string.java_version, question.javaVersion)
+            questionText.text = question.questionText ?: "[No question text]"
+            
+            // Validate and set answer options
+            val options = question.options
+            if (options.size < 4) {
+                Log.w("QuizActivity", "Question has less than 4 options: ${options.size}")
+                // Handle case where we have fewer than 4 options
+                optionButton1.text = options.getOrNull(0) ?: "Option 1"
+                optionButton2.text = options.getOrNull(1) ?: "Option 2"
+                optionButton3.text = options.getOrNull(2) ?: "Option 3"
+                optionButton4.text = options.getOrNull(3) ?: "Option 4"
+                
+                // Disable buttons that don't have valid options
+                optionButton1.isEnabled = options.size > 0
+                optionButton2.isEnabled = options.size > 1
+                optionButton3.isEnabled = options.size > 2
+                optionButton4.isEnabled = false // Always disable the 4th button if we don't have 4 options
+            } else {
+                // We have at least 4 options
+                optionButton1.text = options[0]
+                optionButton2.text = options[1]
+                optionButton3.text = options[2]
+                optionButton4.text = options[3]
+                
+                // Make sure all buttons are enabled
+                enableOptionButtons()
+            }
+            
+            // Hide feedback elements initially
+            feedbackText.visibility = View.GONE
+            explanationText.visibility = View.GONE
+            nextButton.visibility = View.GONE
+            
+            // Reset button styles
+            resetOptionButtons()
+            
+        } catch (e: Exception) {
+            Log.e("QuizActivity", "Error displaying question", e)
+            showErrorAndFinish("Error loading question. Please try again.")
+        }
+    }
+    
+    private fun showErrorAndFinish(message: String) {
+        // Show error message
+        feedbackText.visibility = View.VISIBLE
+        feedbackText.text = message
+        feedbackText.setTextColor(Color.RED)
         
-        questionCounter.text = getString(R.string.question_counter, currentQuestionIndex + 1, questions.size)
-        javaVersionBadge.text = getString(R.string.java_version, question.javaVersion)
-        questionText.text = question.questionText
+        // Disable all option buttons
+        disableOptionButtons()
         
-        // Set all 4 answer options
-        optionButton1.text = question.options[0]
-        optionButton2.text = question.options[1]
-        optionButton3.text = question.options[2]
-        optionButton4.text = question.options[3]
-        
-        // Hide these until user answers
-        feedbackText.visibility = View.GONE
-        explanationText.visibility = View.GONE
-        nextButton.visibility = View.GONE
-        
-        // Reset button colors (important for dark mode)
-        resetOptionButtons()
-        enableOptionButtons()
+        // Show next button to allow user to proceed
+        nextButton.visibility = View.VISIBLE
+        nextButton.text = getString(android.R.string.ok)
+        nextButton.setOnClickListener {
+            finish()
+        }
     }
     
     // Wire up the answer buttons
@@ -191,33 +246,67 @@ class QuizActivity : AppCompatActivity() {
     
     // Called when user taps an answer
     private fun onOptionSelected(selectedIndex: Int) {
-        Log.d("QuizActivity", "onOptionSelected called with index: $selectedIndex")
-        if (answerSubmitted) {
-            Log.d("QuizActivity", "Answer already submitted, ignoring selection")
-            return // Can't change answer after submitting
-        }
-        
-        selectedAnswerIndex = selectedIndex
-        val question = questions[currentQuestionIndex]
-        Log.d("QuizActivity", "Selected answer index: $selectedIndex, Correct answer index: ${question.correctAnswerIndex}")
-        
-        disableOptionButtons() // Lock in the answer
-        highlightSelectedButton(selectedIndex)
-        
-        val isCorrect = selectedIndex == question.correctAnswerIndex
-        Log.d("QuizActivity", "Answer is correct: $isCorrect")
-        
-        if (isCorrect) {
-            score++
-            Log.d("QuizActivity", "Score updated to: $score")
-        }
+        try {
+            Log.d("QuizActivity", "onOptionSelected called with index: $selectedIndex")
+            
+            // Check if we can proceed with answer selection
+            if (answerSubmitted) {
+                Log.d("QuizActivity", "Answer already submitted, ignoring selection")
+                return // Can't change answer after submitting
+            }
+            
+            if (questions.isEmpty() || currentQuestionIndex >= questions.size) {
+                Log.e("QuizActivity", "No questions available or invalid question index")
+                return
+            }
+            
+            val question = questions.getOrNull(currentQuestionIndex) ?: run {
+                Log.e("QuizActivity", "Question at index $currentQuestionIndex is null")
+                return
+            }
+            
+            if (selectedIndex < 0 || selectedIndex >= question.options.size) {
+                Log.e("QuizActivity", "Invalid selected index: $selectedIndex, options size: ${question.options.size}")
+                return
+            }
+            
+            selectedAnswerIndex = selectedIndex
+            Log.d("QuizActivity", "Selected answer index: $selectedIndex, Correct answer index: ${question.correctAnswerIndex}")
+            
+            try {
+                disableOptionButtons() // Lock in the answer
+                highlightSelectedButton(selectedIndex)
+                
+                val isCorrect = selectedIndex == question.correctAnswerIndex
+                Log.d("QuizActivity", "Answer is correct: $isCorrect")
+                
+                if (isCorrect) {
+                    score++
+                    Log.d("QuizActivity", "Score updated to: $score")
+                }
 
-        // Play sound/vibration if enabled
-        Log.d("QuizActivity", "Calling provideFeedback with isCorrect=$isCorrect")
-        provideFeedback(isCorrect)
-        
-        showFeedback(isCorrect, question)
-        answerSubmitted = true
+                // Play sound/vibration if enabled
+                Log.d("QuizActivity", "Calling provideFeedback with isCorrect=$isCorrect")
+                provideFeedback(isCorrect)
+                
+                showFeedback(isCorrect, question)
+                answerSubmitted = true
+            } catch (e: Exception) {
+                Log.e("QuizActivity", "Error processing answer selection", e)
+                // Show error to user
+                feedbackText.visibility = View.VISIBLE
+                feedbackText.text = "An error occurred. Please try again."
+                feedbackText.setTextColor(Color.RED)
+                enableOptionButtons() // Re-enable buttons to allow retry
+            }
+        } catch (e: Exception) {
+            Log.e("QuizActivity", "Unexpected error in onOptionSelected", e)
+            // Show error to user
+            feedbackText.visibility = View.VISIBLE
+            feedbackText.text = "An unexpected error occurred. Please restart the quiz."
+            feedbackText.setTextColor(Color.RED)
+            nextButton.visibility = View.VISIBLE // Allow user to proceed
+        }
     }
 
     // Plays sound and/or vibration based on user preferences
@@ -237,31 +326,37 @@ class QuizActivity : AppCompatActivity() {
         // Vibration feedback
         if (vibrationEnabled) {
             Log.d("QuizActivity", "Attempting to provide vibration feedback...")
-            val vibratorManager = attributionContext.getSystemService(VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
-            val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                vibratorManager?.defaultVibrator
-            } else {
-                @Suppress("DEPRECATION")
-                attributionContext.getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
-            }
-            // Check if vibrator is available
-            if (vibrator?.hasVibrator() == true) {
-                Log.d("QuizActivity", "Vibrator is available, triggering vibration...")
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    vibrator.vibrate(
-                        android.os.VibrationEffect.createOneShot(
-                            if (isCorrect) 50 else 100,
-                            android.os.VibrationEffect.DEFAULT_AMPLITUDE
-                        )
-                    )
-                    Log.d("QuizActivity", "Vibration triggered (API 26+): ${if (isCorrect) 50 else 100}ms")
+            try {
+                val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    // For Android 12 (API 31) and above
+                    val vibratorManager = attributionContext.getSystemService(VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
+                    vibratorManager?.defaultVibrator
                 } else {
+                    // For older versions
                     @Suppress("DEPRECATION")
-                    vibrator.vibrate(if (isCorrect) 50 else 100)
-                    Log.d("QuizActivity", "Vibration triggered (API <26): ${if (isCorrect) 50 else 100}ms")
+                    attributionContext.getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator
                 }
-            } else {
-                Log.w("QuizActivity", "Vibrator is not available or hasVibrator() returned false")
+
+                if (vibrator?.hasVibrator() == true) {
+                    Log.d("QuizActivity", "Vibrator is available, triggering vibration...")
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        vibrator.vibrate(
+                            android.os.VibrationEffect.createOneShot(
+                                if (isCorrect) 50 else 100,
+                                android.os.VibrationEffect.DEFAULT_AMPLITUDE
+                            )
+                        )
+                        Log.d("QuizActivity", "Vibration triggered (API 26+): ${if (isCorrect) 50 else 100}ms")
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(if (isCorrect) 50 else 100)
+                        Log.d("QuizActivity", "Vibration triggered (API <26): ${if (isCorrect) 50 else 100}ms")
+                    }
+                } else {
+                    Log.w("QuizActivity", "Vibrator is not available or hasVibrator() returned false")
+                }
+            } catch (e: Exception) {
+                Log.e("QuizActivity", "Error providing vibration feedback", e)
             }
         } else {
             Log.d("QuizActivity", "Vibration is disabled in preferences, skipping...")

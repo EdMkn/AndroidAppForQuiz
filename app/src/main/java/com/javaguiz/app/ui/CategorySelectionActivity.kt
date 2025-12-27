@@ -133,12 +133,39 @@ class CategorySelectionActivity : AppCompatActivity() {
     
     private fun startQuiz(javaVersion: String?, category: String?) {
         Log.d("QuizStart", "Starting quiz with version: $javaVersion, category: $category")
-        val intent = Intent(this, QuizActivity::class.java).apply {
-            putExtra("version", javaVersion ?: "")
-            putExtra("category", category ?: "")
+        
+        lifecycleScope.launch {
+            try {
+                val questions = questionRepository.getQuestionsByVersionAndCategorySync(
+                    if (javaVersion.isNullOrEmpty()) null else javaVersion,
+                    if (category.isNullOrEmpty()) null else category
+                )
+                
+                if (questions.isEmpty()) {
+                    // Show a toast or dialog to inform the user
+                    android.widget.Toast.makeText(
+                        this@CategorySelectionActivity,
+                        "No questions available for the selected criteria",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
+                
+                val intent = Intent(this@CategorySelectionActivity, QuizActivity::class.java).apply {
+                    putExtra("version", javaVersion ?: "")
+                    putExtra("category", category ?: "")
+                }
+                startActivity(intent)
+                finish()
+            } catch (e: Exception) {
+                Log.e("CategorySelection", "Error checking questions", e)
+                android.widget.Toast.makeText(
+                    this@CategorySelectionActivity,
+                    "Error checking questions: ${e.message}",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
         }
-        startActivity(intent)
-        finish()
     }
 
     // Add this adapter class
