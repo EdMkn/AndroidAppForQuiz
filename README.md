@@ -175,18 +175,21 @@ docker run --rm -v $(pwd):/app -w /app javaguiz-app ./gradlew assembleDebug
 - Verify `minSdk` version matches your device/emulator
 - Check Logcat for error messages
 
-<!--
 ## 📝 Next Steps
 
-Consider adding:
-- [ ] User preferences (dark mode, question count) ok
+### ✅ Completed Features
+- [x] User preferences (dark mode, question count)
+- [x] Categories by Java version
+- [x] Database for questions (Room)
+- [x] Multi-version selection for quizzes
+
+### 🚧 Upcoming Features
 - [ ] Progress saving
-- [ ] Categories by Java version ok
 - [ ] Timer for questions
 - [ ] Statistics tracking
-- [ ] Database for questions (Room) ok
 - [ ] Network support for downloading questions
--->
+- [ ] Question difficulty levels
+- [ ] Review incorrect answers
 
 ## 🤝 Contributing
 

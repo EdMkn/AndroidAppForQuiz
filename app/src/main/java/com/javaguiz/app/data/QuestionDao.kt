@@ -25,12 +25,12 @@ interface QuestionDao {
      */
     @Query("SELECT * FROM questions WHERE javaVersion = :version ORDER BY id")
     fun getQuestionsByVersion(version: String): Flow<List<QuestionEntity>>
-    
+
     /**
-     * Get questions filtered by Java version synchronously
+     * Get questions filtered by Java versions 
      */
-    @Query("SELECT * FROM questions WHERE javaVersion = :version ORDER BY id")
-    suspend fun getQuestionsByVersionSync(version: String): List<QuestionEntity>
+    @Query("SELECT * FROM questions WHERE javaVersion IN (:versions) ORDER BY id")
+    suspend fun getQuestionsByVersions(versions: List<String>): List<QuestionEntity>
     
     /**
      * Get a single question by ID
@@ -49,25 +49,16 @@ interface QuestionDao {
      */
     @Query("SELECT * FROM questions WHERE category = :category ORDER BY id")
     fun getQuestionsByCategory(category: String): Flow<List<QuestionEntity>>
-    
-    /**
-     * Get questions filtered by category synchronously
-     */
-    @Query("SELECT * FROM questions WHERE category = :category ORDER BY id")
-    suspend fun getQuestionsByCategorySync(category: String): List<QuestionEntity>
-    
+   
     /**
      * Get questions filtered by both version and category as a Flow
      */
     @Query("SELECT * FROM questions WHERE javaVersion = :version AND category = :category ORDER BY id")
     fun getQuestionsByVersionAndCategory(version: String, category: String): Flow<List<QuestionEntity>>
     
-    /**
-     * Get questions filtered by both version and category synchronously
-     */
-    @Query("SELECT * FROM questions WHERE javaVersion = :version AND category = :category ORDER BY id")
-    suspend fun getQuestionsByVersionAndCategorySync(version: String, category: String): List<QuestionEntity>
-    
+    @Query("SELECT * FROM questions WHERE javaVersion IN (:versions) AND category = :category")
+    suspend fun getQuestionsByVersionsAndCategory(versions: List<String>, category: String): List<QuestionEntity>
+
     /**
      * Get distinct categories available in the database
      */

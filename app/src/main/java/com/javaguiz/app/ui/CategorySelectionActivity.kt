@@ -1,13 +1,16 @@
 package com.javaguiz.app.ui
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +19,7 @@ import com.google.android.material.button.MaterialButton
 import com.javaguiz.app.data.QuestionRepository
 import com.javaguiz.app.QuizApplication
 import com.javaguiz.app.R
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -29,6 +33,8 @@ class CategorySelectionActivity : AppCompatActivity() {
     private lateinit var selectedCategoryText: TextView
     private lateinit var versionButtonsRecycler: RecyclerView
     private lateinit var backButton: Button
+    private lateinit var startQuizButton: Button
+    private var selectedVersions = mutableListOf<String>()
     private var selectedCategory: String? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +46,15 @@ class CategorySelectionActivity : AppCompatActivity() {
         selectedCategoryText = findViewById(R.id.selectedCategoryText)
         versionButtonsRecycler = findViewById(R.id.versionButtonsRecycler)
         backButton = findViewById(R.id.backButton)
-
+        startQuizButton = findViewById(R.id.startQuizButton)
+        startQuizButton.visibility = View.GONE
+        startQuizButton.setOnClickListener {
+            if (selectedVersions.isNotEmpty()) {
+                startQuiz(selectedVersions, selectedCategory)
+            }else {
+                Toast.makeText(this, "Please select at least one version", Toast.LENGTH_SHORT).show()
+            }
+        }
         // Set up RecyclerView for version buttons
         versionButtonsRecycler.layoutManager = LinearLayoutManager(this)
         versionButtonsRecycler.addItemDecoration(
@@ -82,8 +96,9 @@ class CategorySelectionActivity : AppCompatActivity() {
     }
     
     private fun setupVersionButtons(versions: List<String>) {
-        val adapter = VersionAdapter(versions) { selectedVersion ->
-            startQuiz(selectedVersion, selectedCategory)
+        val adapter = VersionAdapter(versions) { selectedVersions ->
+            this.selectedVersions = selectedVersions.toMutableList()
+            startQuizButton.visibility = if (selectedVersions.isNotEmpty()) View.VISIBLE else View.GONE
         }
         versionButtonsRecycler.adapter = adapter
     }
@@ -131,15 +146,16 @@ class CategorySelectionActivity : AppCompatActivity() {
         }
     }
     
-    private fun startQuiz(javaVersion: String?, category: String?) {
-        Log.d("QuizStart", "Starting quiz with version: $javaVersion, category: $category")
+    private fun startQuiz(versions: List<String>?, category: String?) {
+        Log.d("QuizStart", "Starting quiz with version: $versions, category: $category")
         
         lifecycleScope.launch {
             try {
-                val questions = questionRepository.getQuestionsByVersionAndCategorySync(
-                    if (javaVersion.isNullOrEmpty()) null else javaVersion,
-                    if (category.isNullOrEmpty()) null else category
-                )
+                val questions = if (versions.isNullOrEmpty()) {
+                    questionRepository.getQuestionsByVersionAndCategory(null, category?.ifEmpty { null }).first()
+                } else {
+                    questionRepository.getQuestionsByVersionsAndCategory(versions, category?.ifEmpty { null })
+                }
                 
                 if (questions.isEmpty()) {
                     // Show a toast or dialog to inform the user
@@ -152,7 +168,7 @@ class CategorySelectionActivity : AppCompatActivity() {
                 }
                 
                 val intent = Intent(this@CategorySelectionActivity, QuizActivity::class.java).apply {
-                    putExtra("version", javaVersion ?: "")
+                    putStringArrayListExtra("versions", ArrayList(versions))
                     putExtra("category", category ?: "")
                 }
                 startActivity(intent)
@@ -168,34 +184,67 @@ class CategorySelectionActivity : AppCompatActivity() {
         }
     }
 
-    // Add this adapter class
+}
+
 private class VersionAdapter(
         private val versions: List<String>,
-        private val onVersionSelected: (String) -> Unit
+        private val onVersionsSelected: (List<String>) -> Unit
     ) : RecyclerView.Adapter<VersionAdapter.VersionViewHolder>() {
+        private val selectedVersions = mutableListOf<String>()
         class VersionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val button: Button = view as Button
+            val button: MaterialButton = view as MaterialButton
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VersionViewHolder {
-            val button = MaterialButton(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                setPadding(32, 16, 32, 16)
-                textSize = 16f
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VersionViewHolder {
+                val button = MaterialButton(parent.context).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    val padding = resources.getDimensionPixelSize(R.dimen.button_padding)
+                    setPadding(padding, padding, padding, padding)
+                    textSize = 16f
+                    isCheckable = true
+                    isChecked = false
+
+                   // Apply both selectors
+                    background = ContextCompat.getDrawable(context, R.drawable.version_button_background_selector)
+                    setTextColor(ContextCompat.getColorStateList(context, R.color.version_button_color_selector))
+                }
+                return VersionViewHolder(button)
             }
-            return VersionViewHolder(button)
-        }
-        override fun onBindViewHolder(holder: VersionViewHolder, position: Int) {
-            val version = versions[position]
-            holder.button.text = when (version) {
-                "Core" -> holder.button.context.getString(R.string.core_java)
-                else -> "Java $version"
+            override fun onBindViewHolder(holder: VersionViewHolder, position: Int) {
+                val version = versions[position]
+                holder.button.text = when (version) {
+                    "Core" -> holder.button.context.getString(R.string.core_java)
+                    else -> "Java $version"
+                }
+                
+                // Update the button's appearance based on selection
+                holder.button.isChecked = selectedVersions.contains(version)
+                updateButtonAppearance(holder.button, holder.button.isChecked)
+
+                holder.button.setOnClickListener {
+                    if (holder.button.isChecked) {
+                        if (!selectedVersions.contains(version)) {
+                            selectedVersions.add(version)
+                        }
+                    } else {
+                        selectedVersions.remove(version)
+                    }
+                    onVersionsSelected(selectedVersions)
+                }
             }
-            holder.button.setOnClickListener { onVersionSelected(version) }
-        }
-        override fun getItemCount() = versions.size
+
+            private fun updateButtonAppearance(button: MaterialButton, isSelected: Boolean) {
+                val context = button.context
+                if (isSelected) {
+                    button.setBackgroundColor(ContextCompat.getColor(context, R.color.purple_500))
+                    button.setTextColor(Color.WHITE)
+                } else {
+                    button.setBackgroundColor(ContextCompat.getColor(context, R.color.purple_200))
+                    button.setTextColor(ContextCompat.getColor(context, R.color.black))
+                }
+            }
+            override fun getItemCount() = versions.size
     }
-}
 

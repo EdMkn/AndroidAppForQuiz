@@ -59,14 +59,15 @@ class QuizActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
         
-        val version = intent.getStringExtra("version") ?: "no version"
+        val versions = intent.getStringArrayListExtra("versions") ?: emptyList<String>()
         val category = intent.getStringExtra("category") ?: "no category"
-        Log.d("QuizActivity", "Received version: $version, category: $category")
+        Log.d("QuizActivity", "Received versions: $versions, category: $category")
         
         // Get repository from Application
         questionRepository = (application as QuizApplication).questionRepository
-        
         preferencesManager = PreferencesManager(this)
+
+        initializeViews()
 
         // Set up sound feedback - only if enabled (saves resources)
         // Preloading here so sounds play instantly when needed
@@ -84,31 +85,25 @@ class QuizActivity : AppCompatActivity() {
             mediaActionSound = null
         }
 
-        initializeViews()
-        
-        // Get repository from Application
-        questionRepository = (application as QuizApplication).questionRepository
-        
-        // Get selected Java version category from intent (null means all questions)
-        val selectedJavaVersion = intent.getStringExtra("version")
-        
-        // Get selected category from intent (null means all categories)
-        val selectedCategory = intent.getStringExtra("category")
-
-        Log.d("QuizActivity", "Selected version: $selectedJavaVersion, category: $selectedCategory")
-        
-        // Get question count from preferences - 999 means "all questions"
-        val questionCount = preferencesManager.getQuestionCount()
-        
-        // Load questions asynchronously from database
+        // Load questions
         lifecycleScope.launch {
             try {
+                val questionCount = preferencesManager.getQuestionCount()
+                Log.d("QuizActivity", "Loading $questionCount questions for versions: $versions")
+                
                 questions = if (questionCount >= 999) {
-                    // Get all questions and shuffle
-                    questionRepository.getQuestionsByVersionAndCategory(selectedJavaVersion, selectedCategory).first().shuffled()
+                    // Get all questions for selected versions and category
+                    questionRepository.getQuestionsByVersionsAndCategory(
+                        versions.ifEmpty { null },
+                        category?.ifEmpty { null }
+                    )
                 } else {
-                    // Get random subset
-                    questionRepository.getRandomQuestionsByVersionAndCategory(questionCount, selectedJavaVersion, selectedCategory)
+                    // Get random subset of questions
+                    val allQuestions = questionRepository.getQuestionsByVersionsAndCategory(
+                        versions.ifEmpty { null },
+                        category?.ifEmpty { null }
+                    )
+                    allQuestions.shuffled().take(questionCount)
                 }
                 
                 // Only proceed if we have questions
@@ -117,12 +112,12 @@ class QuizActivity : AppCompatActivity() {
                     setupOptionButtons()
                 } else {
                     // Handle empty questions case
-                    Log.e("QuizActivity", "No questions found for version: $selectedJavaVersion")
-                    finish() // Close activity if no questions
+                    Log.e("QuizActivity", "No questions found for versions: $versions")
+                    showErrorAndFinish("No questions available for the selected criteria")
                 }
             } catch (e: Exception) {
                 Log.e("QuizActivity", "Error loading questions", e)
-                finish() // Close activity on error
+                showErrorAndFinish("Error loading questions. Please try again.")
             }
         }
         
