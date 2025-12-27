@@ -151,11 +151,10 @@ class CategorySelectionActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val questions = if (versions.isNullOrEmpty()) {
-                    questionRepository.getQuestionsByVersionAndCategory(null, category?.ifEmpty { null }).first()
-                } else {
-                    questionRepository.getQuestionsByVersionsAndCategory(versions, category?.ifEmpty { null })
-                }
+                val questions = questionRepository.getQuestionsByVersionsAndCategory(
+                    versions ?: emptyList(), 
+                    category?.ifEmpty { null }
+                )
                 
                 if (questions.isEmpty()) {
                     // Show a toast or dialog to inform the user
@@ -168,7 +167,7 @@ class CategorySelectionActivity : AppCompatActivity() {
                 }
                 
                 val intent = Intent(this@CategorySelectionActivity, QuizActivity::class.java).apply {
-                    putStringArrayListExtra("versions", ArrayList(versions))
+                    putStringArrayListExtra("versions", ArrayList(versions?: emptyList()))
                     putExtra("category", category ?: "")
                 }
                 startActivity(intent)

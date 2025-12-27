@@ -45,10 +45,15 @@ class QuestionRepository(context: Context) {
     }
 
     private suspend fun getQuestionsByVersions(versions: List<String>): List<Question> {
+        Log.d("QuestionRepository", "getQuestionsByVersions called with: $versions")
         return if (versions.isEmpty()) {
+            Log.d("QuestionRepository", "No versions provided, returning empty list")
             emptyList()
         } else {
-            questionDao.getQuestionsByVersions(versions).map { it.toQuestion() }
+            Log.d("QuestionRepository", "Querying database for versions: $versions")
+            val questions = questionDao.getQuestionsByVersions(versions).map { it.toQuestion() }
+            Log.d("QuestionRepository", "Found ${questions.size} questions for versions: $versions")
+            questions
         }
     }
     
@@ -91,17 +96,42 @@ class QuestionRepository(context: Context) {
      * Get questions filtered by both versions and category
      */
     suspend fun getQuestionsByVersionsAndCategory(versions: List<String>?, category: String?): List<Question> {
+        Log.d("QuestionRepository", "getQuestionsByVersionsAndCategory called with:")
+        Log.d("QuestionRepository", "- versions: ${versions?.joinToString() ?: "null"} (${versions?.size ?: 0} items)")
+        Log.d("QuestionRepository", "- category: ${category ?: "null"}")
+        
         return try {
-            when {
-                versions.isNullOrEmpty() && category.isNullOrEmpty() ->
-                    getAllQuestions().first()
-                versions.isNullOrEmpty() ->
-                    getQuestionsByCategory(category!!).first()
-                category.isNullOrEmpty() ->
+            val result = when {
+                versions == null || versions.isEmpty() -> {
+                    Log.d("QuestionRepository", "No versions provided, falling back to all questions")
+                    // If no versions are selected, get all questions (filtered by category if specified)
+                    if (category.isNullOrEmpty()) {
+                        Log.d("QuestionRepository", "No category provided, getting all questions")
+                        getAllQuestions().first()
+                    } else {
+                        Log.d("QuestionRepository", "Filtering by category: $category")
+                        getQuestionsByCategory(category).first()
+                    }
+                }
+                category.isNullOrEmpty() -> {
+                    // If no category is specified, get questions for the specified versions
                     getQuestionsByVersions(versions)
-                else ->
-                    questionDao.getQuestionsByVersionsAndCategory(versions, category)
-                        .map { it.toQuestion() } // Convert entities to domain models
+                }
+                else -> {
+                    // If versions are provided, filter by them (and by category if specified)
+                    Log.d("QuestionRepository", "Filtering by versions: $versions")
+                    val questionsByVersions = getQuestionsByVersions(versions)
+                    Log.d("QuestionRepository", "Found ${questionsByVersions.size} questions for versions: $versions")
+                    
+                    if (!category.isNullOrEmpty()) {
+                        Log.d("QuestionRepository", "Further filtering by category: $category")
+                        val filtered = questionsByVersions.filter { it.category == category }
+                        Log.d("QuestionRepository", "After category filter: ${filtered.size} questions remain")
+                        filtered
+                    } else {
+                        questionsByVersions
+                    }
+                }
             }.let { questions ->
                 questions.ifEmpty {
                     Log.w(
@@ -111,8 +141,12 @@ class QuestionRepository(context: Context) {
                     emptyList()
                 }
             }
+            
+            Log.d("QuestionRepository", "Returning ${result.size} questions total")
+            result
         } catch (e: Exception) {
-            Log.e("QuestionRepository", "Error getting questions", e)
+            Log.e("QuestionRepository", "Error getting questions by versions and category: ${e.message}", e)
+            Log.e("QuestionRepository", "Versions: $versions, Category: $category")
             emptyList()
         }
     }

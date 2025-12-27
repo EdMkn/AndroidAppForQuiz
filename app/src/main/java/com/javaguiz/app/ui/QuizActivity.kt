@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.media.MediaActionSound
 import android.os.Bundle
 import android.util.Log
+import android.util.Log.e
 import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
@@ -40,6 +41,8 @@ class QuizActivity : AppCompatActivity() {
     private lateinit var questions: List<Question>
     private var currentQuestionIndex = 0
     private var score = 0
+    private var versions: List<String> = emptyList() 
+    private var category: String = ""
     private var selectedAnswerIndex: Int? = null
     private var answerSubmitted = false // Prevent changing answer after submission
 
@@ -59,9 +62,16 @@ class QuizActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
         
-        val versions = intent.getStringArrayListExtra("versions") ?: emptyList<String>()
-        val category = intent.getStringExtra("category") ?: "no category"
-        Log.d("QuizActivity", "Received versions: $versions, category: $category")
+        // Log all received intent extras
+        Log.d("QuizActivity", "Intent extras: ${intent?.extras?.keySet()?.joinToString()}")
+        
+        versions = intent.getStringArrayListExtra("versions") ?: emptyList<String>()
+        category = intent.getStringExtra("category") ?: "no category"
+        Log.d("QuizActivity", "Parsed versions: $versions (size: ${versions.size}), category: $category")
+        
+        if (versions.isEmpty()) {
+            Log.w("QuizActivity", "No versions received in intent! This might cause issues.")
+        }
         
         // Get repository from Application
         questionRepository = (application as QuizApplication).questionRepository
@@ -89,18 +99,28 @@ class QuizActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val questionCount = preferencesManager.getQuestionCount()
-                Log.d("QuizActivity", "Loading $questionCount questions for versions: $versions")
+                Log.d("QuizActivity", "Loading $questionCount questions for versions: $versions (size: ${versions.size})")
+                
+                // Log the actual values being passed to the repository
+                Log.d("QuizActivity", "Calling getQuestionsByVersionsAndCategory with:")
+                Log.d("QuizActivity", "- versions: $versions (${versions.javaClass.simpleName})")
+                Log.d("QuizActivity", "- category: $category (${category?.javaClass?.simpleName})")
                 
                 questions = if (questionCount >= 999) {
                     // Get all questions for selected versions and category
-                    questionRepository.getQuestionsByVersionsAndCategory(
-                        versions.ifEmpty { null },
-                        category?.ifEmpty { null }
+                    val questions = questionRepository.getQuestionsByVersionsAndCategory(
+                        versions,
+                        category.ifEmpty { null }
                     )
+                    Log.d("QuizActivity", "Loaded ${questions.size} questions for versions: $versions")
+                    if (questions.isEmpty()) {
+                        Log.e("QuizActivity", "WARNING: No questions found for versions: $versions, category: $category")
+                    }
+                    questions
                 } else {
                     // Get random subset of questions
                     val allQuestions = questionRepository.getQuestionsByVersionsAndCategory(
-                        versions.ifEmpty { null },
+                        versions,
                         category?.ifEmpty { null }
                     )
                     allQuestions.shuffled().take(questionCount)
@@ -507,7 +527,7 @@ class QuizActivity : AppCompatActivity() {
             putExtra("score", score)
             putExtra("total", total)
             putExtra("category", intent.getStringExtra("category"))
-            putExtra("version", intent.getStringExtra("version"))
+            putExtra("versions", ArrayList(versions))
         }
         startActivity(intent)
         finish()
