@@ -452,7 +452,7 @@ class QuizActivity : AppCompatActivity() {
         val button = getOptionButton(index)
         // Get primary color from theme (adapts to light/dark mode)
         val typedValue = TypedValue()
-        theme.resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true)
+        theme.resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true)
         val primaryColor = typedValue.data
         // Semi-transparent background
         val selectedBg = Color.argb(30, Color.red(primaryColor), Color.green(primaryColor), Color.blue(primaryColor))

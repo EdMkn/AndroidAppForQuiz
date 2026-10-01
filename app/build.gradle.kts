@@ -1,18 +1,19 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("kotlin-parcelize")
+    id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.parcelize")
 }
 
 android {
     namespace = "com.javaguiz.app"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.javaguiz.app"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -27,107 +28,79 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Use debug signing if no release signing config is provided (for CI/CD)
+            // Signature debug si aucune config de release n'est fournie (CI/CD)
             signingConfig = signingConfigs.getByName("debug")
-            
-            // Enable code optimization
-            isDebuggable = false
-            isJniDebuggable = false
-            isRenderscriptDebuggable = false
-            isPseudoLocalesEnabled = false
         }
-        
+
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
-            isDebuggable = true
         }
     }
-    
-    // Optimize APK packaging
+
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "META-INF/*.version"
-            excludes += "META-INF/proguard/*"
-            excludes += "META-INF/INDEX.LIST"
-            excludes += "META-INF/io.netty.versions.properties"
+            excludes += setOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "META-INF/*.version",
+                "META-INF/proguard/*",
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties"
+            )
         }
     }
-    
-    // Enable build config fields for different build types
-    buildFeatures {
-        buildConfig = true
-    }
-    
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-        // Enable core library desugaring
-        isCoreLibraryDesugaringEnabled = true
-    }
-    
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs = listOf(
-            "-Xjvm-default=all",
-            "-opt-in=kotlin.RequiresOptIn"
-        )
-    }
-    
-    // Enable Java 8+ API desugaring
+
     buildFeatures {
         viewBinding = true
         buildConfig = true
     }
 
-    buildFeatures {
-        viewBinding = true
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
-    
-    // Fix kapt Java 17 compatibility
-    kapt {
-        correctErrorTypes = true
-        javacOptions {
-            option("-source", "17")
-            option("-target", "17")
-        }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 
 dependencies {
-    // Core libraries
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    
-    // Lifecycle components
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    
-    // Preference library
+    // Core
+    implementation("androidx.core:core-ktx:1.19.1")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.13.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.2")
+
+    // Lifecycle
+    val lifecycleVersion = "2.11.0"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
+
+    // Preferences
     implementation("androidx.preference:preference-ktx:1.2.1")
-    
-    // Room database
-    val roomVersion = "2.6.1"
+
+    // Room
+    val roomVersion = "2.8.5"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
-    
-    // Gson for type conversion
-    implementation("com.google.code.gson:gson:2.10.1")
-    
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    
-    // Core library desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    
-    // Testing
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-}
+    ksp("androidx.room:room-compiler:$roomVersion")
 
+    // Gson
+    implementation("com.google.code.gson:gson:2.13.1")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+
+    // Desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
+    // Tests
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+}
